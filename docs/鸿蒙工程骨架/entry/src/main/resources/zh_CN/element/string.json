@@ -1,0 +1,32 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "瞄一眼"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "瞄一眼"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "瞄一眼"
+    },
+    {
+      "name": "perm_internet_reason",
+      "value": "用于 AI 制卡与牌组下载"
+    },
+    {
+      "name": "perm_camera_reason",
+      "value": "用于拍照制卡，把书页或笔记变成卡片"
+    },
+    {
+      "name": "perm_microphone_reason",
+      "value": "用于录制卡片发音"
+    },
+    {
+      "name": "perm_reminder_reason",
+      "value": "用于在您设定的时间提醒今天该复习了"
+    }
+  ]
+}
