@@ -7,7 +7,7 @@
 ---
 
 ## 一、可交互 HTML 原型（推荐先看）
-`可交互HTML原型/index.html` —— 双击打开，无需服务器 / 联网 / 依赖。
+`anki\docs\可交互HTML原型\index.html` —— 双击打开，无需服务器 / 联网 / 依赖。
 
 - **40 屏**，纯原生 HTML + CSS + JS
 - 支持点击跳转、翻卡、评分、Tab 切换、深色模式、平板宽屏模式
@@ -15,7 +15,7 @@
 - URL 加 `#页面名` 可直达，如 `index.html#widget`
 
 ## 二、41 张单屏静态图
-`单屏原型图/` —— 436×823（平板页 666×823），2 倍图高清。
+`anki\docs\单屏原型图/` —— 436×823（平板页 666×823），2 倍图高清。
 
 | 分组 | 编号 | 页面 |
 |---|---|---|
@@ -38,8 +38,8 @@
 
 | 文件 | 内容 |
 |---|---|
-| `瞄一眼_PRD_V1.1.docx` | **PRD**（16 章）：定位、四大障碍对策、六条设计原则、39 个页面状态、10 张数据表、5 个状态机、FSRS 方案、埋点、里程碑 |
-| `瞄一眼_个人开发者最小文档.docx` | **开工文档**（9 章）：需求清单（F01-F23）、页面四态表、数据模型、详细设计、测试计划、发布 Checklist、隐私政策、上架时间线、预置内容生产规范 |
+| `anki\docs\瞄一眼_PRD_V1.1.docx` | **PRD**（16 章）：定位、四大障碍对策、六条设计原则、39 个页面状态、10 张数据表、5 个状态机、FSRS 方案、埋点、里程碑 |
+| `anki\docs\瞄一眼_个人开发者最小文档.docx` | **开工文档**（9 章）：需求清单（F01-F23）、页面四态表、数据模型、详细设计、测试计划、发布 Checklist、隐私政策、上架时间线、预置内容生产规范 |
 
 两份文档的分工：PRD 回答「做成什么样」，最小文档回答「怎么开工、怎么测、怎么上架」。
 
@@ -47,12 +47,20 @@
 
 | 目录 | 内容 |
 |---|---|
-| `FSRS调度器实现/` | FSRS-6 调度器 ArkTS 实现（32 项断言全绿）+ 黄金测试向量生成脚本 |
-| `鸿蒙工程骨架/` | 建表 SQL（10 表 + 10 索引）· 五层目录 · 依赖方向检查脚本 · FSRS 调度器 · ReviewQueue |
+| `anki\docs\FSRS调度器实现/` | FSRS-6 调度器 ArkTS 实现（32 项断言全绿）+ 黄金测试向量生成脚本 |
+| `anki\docs\鸿蒙工程骨架/` | 建表 SQL（10 表 + 10 索引）· 五层目录 · 依赖方向检查脚本 · FSRS 调度器 · ReviewQueue |
 
-工程骨架可以直接 `git init` 开工，建议挂 pre-commit：
+工程骨架可以直接 `git init` 开工，**必须**安装 pre-commit 钩子以确保分层合规：
+
 ```bash
-echo 'python3 scripts/check_deps.py --strict' > .git/hooks/pre-commit
+# 一键安装 Git Hook
+bash anki/scripts/install_hooks.sh
+```
+
+或者手动挂载：
+```bash
+echo 'python3 anki/scripts/check_deps.py --strict' > .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
 ```
 
 ---

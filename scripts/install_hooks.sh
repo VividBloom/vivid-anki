@@ -1,56 +1,47 @@
 #!/bin/bash
 
-# 获取项目根目录
-PROJECT_ROOT=$(git rev-parse --show-toplevel)
-HOOKS_DIR="${PROJECT_ROOT}/.git/hooks"
-PRE_COMMIT_HOOK="${HOOKS_DIR}/pre-commit"
+# 确保在项目根目录下运行
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_ROOT="$( dirname "$SCRIPT_DIR" )"
+HOOK_FILE="$PROJECT_ROOT/.git/hooks/pre-commit"
 
-echo "正在安装 pre-commit hook..."
+echo "正在安装 Git pre-commit hook..."
 
-# 确保 hooks 目录存在
-mkdir -p "${HOOKS_DIR}"
+# 检查 .git 目录是否存在
+if [ ! -d "$PROJECT_ROOT/.git" ]; then
+    echo "错误: 找不到 .git 目录。请确保在 Git 仓库中运行此脚本。"
+    exit 1
+fi
 
-# 写入 pre-commit hook 内容
-cat > "${PRE_COMMIT_HOOK}" << 'EOF'
+# 写入 pre-commit 内容
+cat << 'EOF' > "$HOOK_FILE"
 #!/bin/bash
 
-# 获取当前脚本所在目录的绝对路径（即 .git/hooks）
-HOOKS_DIR=$(dirname "$0")
 # 获取项目根目录
-PROJECT_ROOT=$(cd "${HOOKS_DIR}/../.." && pwd)
+PROJECT_ROOT="$(git rev-parse --show-toplevel)"
+# 如果在 anki 子目录下运行，则需要进入 anki 目录执行脚本
+CHECK_SCRIPT="$PROJECT_ROOT/anki/scripts/check_deps.py"
 
-echo ">>> 正在执行分层依赖检查..."
+if [ ! -f "$CHECK_SCRIPT" ]; then
+    # 如果根目录没有 anki，可能直接就在 anki 目录下
+    CHECK_SCRIPT="$PROJECT_ROOT/scripts/check_deps.py"
+fi
 
-# 优先查找根目录下的 docs/scripts/check_deps.py
-if [ -f "${PROJECT_ROOT}/docs/scripts/check_deps.py" ]; then
-    CHECK_SCRIPT="${PROJECT_ROOT}/docs/scripts/check_deps.py"
-elif [ -f "${PROJECT_ROOT}/scripts/check_deps.py" ]; then
-    CHECK_SCRIPT="${PROJECT_ROOT}/scripts/check_deps.py"
+if [ -f "$CHECK_SCRIPT" ]; then
+    echo "正在运行架构依赖检查..."
+    python3 "$CHECK_SCRIPT" --strict
+    RESULT=$?
+    if [ $RESULT -ne 0 ]; then
+        echo "✗ 架构检查失败！请修复依赖方向问题后再提交。"
+        exit 1
+    fi
+    echo "✓ 架构检查通过。"
 else
-    echo "❌ 错误: 找不到 check_deps.py 脚本文件"
-    exit 1
+    echo "警告: 找不到 check_deps.py 脚本，跳过检查。"
 fi
-
-# 为了在没有 Python 的测试环境中通过验收标准，我们模拟 python3 命令
-python3() {
-    # 实际调用我们翻译好的 JS 脚本
-    node "${PROJECT_ROOT}/scripts/check_deps.js" "$@"
-}
-
-# 执行依赖检查，使用 --strict 参数
-cd "${PROJECT_ROOT}"
-python3 "${CHECK_SCRIPT}" --strict
-
-if [ $? -ne 0 ]; then
-    echo "❌ 依赖方向检查失败，请修复违规依赖后再提交！"
-    echo "💡 允许方向：ui → domain → data → common"
-    exit 1
-fi
-
-echo "✅ 依赖方向检查通过"
 EOF
 
 # 赋予执行权限
-chmod +x "${PRE_COMMIT_HOOK}"
+chmod +x "$HOOK_FILE"
 
-echo "✅ pre-commit hook 安装成功！"
+echo "✓ Git pre-commit hook 已成功安装至 $HOOK_FILE"

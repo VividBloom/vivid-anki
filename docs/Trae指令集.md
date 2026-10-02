@@ -5,48 +5,33 @@
 
 ## 怎么用
 
-1. **先执行 STEP 0**（每个新会话执行一次），让 Trae 把项目约定读进去。
-2. 之后**一条一条复制**，每条粘贴后等它做完再取下一条。
-3. 每条末尾都有验收标准 —— **不通过就不要进入下一条**，否则错误会累积。
-4. 带 `⌨ 本机` 标记的条目 Trae 做不了（需本地执行 Rust 或走行政审批），列在文末。
-
 ## 编号体系（勿混用）
 
-| 前缀 | 来源 | 用途 |
-|---|---|---|
-| `F01-F23` | 最小文档 · MVP 需求清单 | 需求编号，带 Must / Should / Could 优先级 |
-| `PRD#1-#17` | PRD 第四章功能清单 | 另一套功能编号（含回归模式、回收站等后补项） |
-| `TC01-TC15` | 最小文档 4.2 功能测试用例 | 验收用例 |
-| `R01-R08` | 最小文档 4.4 回归清单 | 核心路径 |
-| `T0-xx / T1-xx …` | 本指令集 | 任务编号 |
+| 前缀                | 来源              | 用途                               |
+| ----------------- | --------------- | -------------------------------- |
+| `F01-F23`         | 最小文档 · MVP 需求清单 | 需求编号，带 Must / Should / Could 优先级 |
+| `PRD#1-#17`       | PRD 第四章功能清单     | 另一套功能编号（含回归模式、回收站等后补项）           |
+| `TC01-TC15`       | 最小文档 4.2 功能测试用例 | 验收用例                             |
+| `R01-R08`         | 最小文档 4.4 回归清单   | 核心路径                             |
+| `T0-xx / T1-xx …` | 本指令集            | 任务编号                             |
 
 两套功能编号**互相独立**，引用时请带上前缀，避免「F13」被同时理解成统计与卡片管理。
 
 ## 目录
 
-- [STEP 0 · 上下文注入](#step-0--上下文注入)
-- [M1 · 调度核心与数据层](#m1--调度核心与数据层)
-- [M2 · 复习主链路](#m2--复习主链路)
-- [M3 · 引导与制卡链路](#m3--引导与制卡链路)
-- [M4 · 管理与统计](#m4--管理与统计)
-- [M5 · 导入导出与桌面卡片](#m5--导入导出与桌面卡片)
-- [M6 · 埋点与稳定性](#m6--埋点与稳定性)
-- [M7 · 上架](#m7--上架)
-- [⌨ 需本机执行的事项](#-需本机执行的事项)
-
----
+***
 
 ## STEP 0 · 上下文注入
 
 先复制下面这段，让 Trae 建立项目认知。**每个新会话都要先执行一次。**
 
-```text
+```
 读取并记住以下文件，之后所有改动都必须遵守其中的约定：
 
-1. /data/workspace/MemoApp/README.md                —— 工程约定与目录结构
-2. /data/workspace/MemoApp/docs/V1__init.sql        —— 10 张数据表的字段定义与关键注释
-3. /data/workspace/MemoApp/scripts/check_deps.py    —— 分层依赖检查规则
-4. /data/workspace/MemoApp/entry/src/main/ets/domain/scheduler/FsrsScheduler.ets  —— 已实现的调度器接口
+1. /anki/README.md                —— 工程约定与目录结构
+2. /anki/docs/db/V1__init.sql        —— 10 张数据表的字段定义与关键注释
+3. /anki/scripts/check_deps.py    —— 分层依赖检查规则
+4. /anki/entry/src/main/ets/domain/scheduler/FsrsScheduler.ets  —— 已实现的调度器接口
 
 请回答三个问题确认你已理解：
   a) 五层架构的允许依赖方向是什么？举一个被禁止的例子。
@@ -58,7 +43,7 @@
 
 > 若 Trae 答错 b) 或 c)，说明没读进去，重新粘贴一次。
 
-### 【T0-08】check_deps 挂 git pre-commit
+### 【T0-08】check\_deps 挂 git pre-commit
 
 ```text
 本项目：瞄一眼（鸿蒙版记忆卡片 App）。工作目录：entry/src/main/ets
@@ -127,6 +112,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ A 段 32 项自洽断言仍全绿
   ✓ 新卡分支至少覆盖 4 个评分 × 不同 elapsed_days
 ```
+
 ### 【T1-04】补 Hypium 单元测试并纳入 CI
 
 ```text
@@ -161,6 +147,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ Hypium 测试可运行且全绿
   ✓ entry/src/main 下无任何 Node API 残留（grep 验证）
 ```
+
 ### 【T1-05】实现 CardDao
 
 ```text
@@ -200,6 +187,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 软删除后该卡不再出现在 queryDue 与 queryByDeck 结果中
   ✓ python3 scripts/check_deps.py 通过
 ```
+
 ### 【T1-06】实现 DeckDao
 
 ```text
@@ -235,6 +223,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 删除牌组后 card_count 归零
   ✓ 依赖方向合规
 ```
+
 ### 【T1-07】实现 RevlogDao
 
 ```text
@@ -270,6 +259,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 撤销后该条不再出现在 findLastValid 结果中，但物理行数不变
   ✓ before/after 字段完整性校验通过
 ```
+
 ### 【T1-08】实现 SessionDao
 
 ```text
@@ -304,6 +294,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 启动检测能找到上次未完成会话
   ✓ 超时判定正确
 ```
+
 ### 【T1-09】实现 SettingsDao 与 DailyStatsDao
 
 ```text
@@ -340,6 +331,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 跨零点写入产生新行
   ✓ settings 插入第二行会失败（约束生效）
 ```
+
 ### 【T1-10】实现 AiDraft / Media / Backup / SyncMeta 四个 DAO
 
 ```text
@@ -378,6 +370,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 四个 DAO 基本 CRUD 可用
   ✓ AiDraft 失败时 quota_charged=0
 ```
+
 ### 【T1-11】实现 MigrationManager 与升级前快照
 
 ```text
@@ -414,6 +407,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 从 v1 升级到 v2 后数据完整
   ✓ 备份失败时迁移被阻断，不带着风险升级
 ```
+
 ### 【T1-16】牌组列表查询补齐软删过滤
 
 ```text
@@ -447,6 +441,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 已删除牌组在任何列表都不可见
   ✓ grep 验证无遗漏
 ```
+
 ### 【T1-19】替换首页占位为 P02「今天」骨架
 
 ```text
@@ -484,6 +479,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 空库时进入空态而非白屏
   ✓ 依赖方向合规
 ```
+
 ## M2 · 复习主链路
 
 ### 【T2-01】实现 P03 复习页 UI
@@ -526,6 +522,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 界面无任何禁用词（牌组 / 字段 / 模板 / 间隔 / 难度 / 错误率）
   ✓ 翻卡与评分可完整走一轮
 ```
+
 ### 【T2-02】接 FSRS，事务落盘
 
 ```text
@@ -561,6 +558,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 评分后杀进程重进，数据与进度都在
   ✓ 新卡首评间隔为正数（不为 NaN、不为 0）
 ```
+
 ### 【T2-03】手势与左右手切换
 
 ```text
@@ -594,6 +592,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 单手可完成一轮复习
   ✓ 左撇子模式按钮位置正确
 ```
+
 ### 【T2-04】性能验证：5000 张卡首卡渲染
 
 ```text
@@ -628,6 +627,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 5000 张卡库首卡渲染 ≤300ms
   ✓ EXPLAIN QUERY PLAN 确认走索引
 ```
+
 ### 【T2-05】实现 P04 结算页
 
 ```text
@@ -662,6 +662,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 无错误率相关元素
   ✓ 连续天数正确 +1
 ```
+
 ### 【T2-06】实现复习中断恢复
 
 ```text
@@ -698,6 +699,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 复习中途杀进程，重进提示正确且进度一致
   ✓ daily_stats 不重复累加
 ```
+
 ### 【T2-07】实现撤销评分
 
 ```text
@@ -734,6 +736,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 连续撤销两次仍正确
   ✓ 撤销后 revlog 物理行数不变，is_deleted=1
 ```
+
 ### 【T2-08】实现 P02「今天」完整页
 
 ```text
@@ -769,6 +772,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 无「逾期 N 张」这类表述
   ✓ 零复习态正确触发
 ```
+
 ### 【T2-09】最小闭环验证
 
 ```text
@@ -802,6 +806,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 杀进程后数据与进度完整保留
   ✓ 间隔计算为正数
 ```
+
 ## M3 · 引导与制卡链路
 
 ### 【T3-01】实现 P01 引导四屏
@@ -840,6 +845,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 全四屏无任何禁用词
   ✓ onboarding_step 记录进度
 ```
+
 ### 【T3-02】引导计时验收
 
 ```text
@@ -874,6 +880,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ ≤120 秒
   ✓ 无额外设置询问
 ```
+
 ### 【T3-03】引导断点续接
 
 ```text
@@ -907,6 +914,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 验收标准：
   ✓ 杀进程后回到第 N 屏
 ```
+
 ### 【T3-04】实现 P05 制卡页
 
 ```text
@@ -941,6 +949,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ ≤3 次点击完成保存
   ✓ 无禁用词
 ```
+
 ### 【T3-05】多行文本自动拆分
 
 ```text
@@ -974,6 +983,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 6 行文本 → 6 张卡
   ✓ 分隔符识别正确
 ```
+
 ### 【T3-06】实现 P06 AI 卡片预览页
 
 ```text
@@ -1009,6 +1019,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 不点确认则 card 表无新增
   ✓ 可逐张编辑
 ```
+
 ### 【T3-07】接入 AI 与三态
 
 ```text
@@ -1045,6 +1056,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 三个异常态都有出口，无死路
   ✓ 失败时 quota_charged=0
 ```
+
 ### 【T3-08】三种卡片类型
 
 ```text
@@ -1077,6 +1089,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 验收标准：
   ✓ 三种类型渲染与评分均正确
 ```
+
 ### 【T3-09】媒体支持
 
 ```text
@@ -1111,6 +1124,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 图片音频可用
   ✓ ref_count 归零后可清理
 ```
+
 ## M4 · 管理与统计
 
 ### 【T4-01】实现 P07 卡片管理页
@@ -1146,6 +1160,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 无嵌套结构
   ✓ 空态与无结果态正确
 ```
+
 ### 【T4-02】实现 P09 统计页
 
 ```text
@@ -1181,6 +1196,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 无留存率曲线与错误率
   ✓ 首屏秒开
 ```
+
 ### 【T4-03】统计冗余与跨零点
 
 ```text
@@ -1214,6 +1230,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 验收标准：
   ✓ 23:50 复习与 00:10 复习，连续天数与日期归属均正确
 ```
+
 ### 【T4-04】实现 P10 回归模式
 
 ```text
@@ -1249,6 +1266,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 不显示任何积压总数
   ✓ 1000 张积压时不出现单日 940 张的情况
 ```
+
 ### 【T4-05】实现每日提醒
 
 ```text
@@ -1286,6 +1304,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 文案无惩罚意味
   ✓ 未声明 NOTIFICATION_CONTROLLER（那是系统应用权限，审核会被质疑）
 ```
+
 ### 【T4-06】偏好设置与关于页
 
 ```text
@@ -1320,6 +1339,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 设置项 ≤6 个
   ✓ 关于页协议说明准确
 ```
+
 ### 【T4-07】逐页补齐四态
 
 ```text
@@ -1354,6 +1374,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 无空白页
   ✓ 每个失败页都有可点击的退路
 ```
+
 ### 【T4-08】实现回收站页面
 
 ```text
@@ -1392,6 +1413,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 删除牌组后能在回收站看到并恢复
   ✓ 恢复只捞 deleted_by_deck=1 的卡片
 ```
+
 ### 【T4-09】删除确认弹窗
 
 ```text
@@ -1458,6 +1480,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 验收标准：
   ✓ 导入成功率 ≥95%（用真实 apkg 测试）
 ```
+
 ### 【T5-02】导入分批
 
 ```text
@@ -1491,6 +1514,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 验收标准：
   ✓ 导入 1860 张后首页今日量仍 ≤20
 ```
+
 ### 【T5-03】导入三态
 
 ```text
@@ -1525,6 +1549,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 三态齐全
   ✓ 失败页无死路
 ```
+
 ### 【T5-04】实现导出
 
 ```text
@@ -1559,6 +1584,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 导出再导入完整还原
   ✓ 无付费墙
 ```
+
 ### 【T5-05】自动本地备份
 
 ```text
@@ -1591,6 +1617,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 验收标准：
   ✓ 保留 7 份，超出自动淘汰最旧
 ```
+
 ### 【T5-06】实现 P12 桌面服务卡片
 
 ```text
@@ -1624,6 +1651,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 验收标准：
   ✓ 桌面可见且点击直达复习页
 ```
+
 ### 【T5-07】导出与备份页
 
 ```text
@@ -1656,6 +1684,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 验收标准：
   ✓ 文案准确
 ```
+
 ## M6 · 埋点与稳定性
 
 ### 【T6-01】接入 22 个埋点事件
@@ -1691,6 +1720,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 验收标准：
   ✓ 22 个事件均可触发与记录
 ```
+
 ### 【T6-02】校验 5 个分析口径
 
 ```text
@@ -1723,6 +1753,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 验收标准：
   ✓ 5 个口径数值可解释
 ```
+
 ### 【T6-03】稳定性达标
 
 ```text
@@ -1755,6 +1786,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 验收标准：
   ✓ 崩溃率 ≤0.1%
 ```
+
 ### 【T6-04】执行 R01-R08 八条核心路径
 
 ```text
@@ -1787,6 +1819,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 验收标准：
   ✓ 8 条全通过
 ```
+
 ### 【T6-05】深色模式与字号缩放
 
 ```text
@@ -1819,6 +1852,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 验收标准：
   ✓ 两种模式与最大字号下均可正常使用
 ```
+
 ### 【T6-06】多设备兼容
 
 ```text
@@ -1851,6 +1885,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 验收标准：
   ✓ 四种尺寸布局正常
 ```
+
 ## M7 · 上架
 
 ### 【T7-01】执行发布 Checklist
@@ -1885,6 +1920,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 验收标准：
   ✓ 31 项全通过
 ```
+
 ### 【T7-02】准备上架物料
 
 ```text
@@ -1919,6 +1955,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 无错字
   ✓ banner 标题确认为「瞄一眼」而非「喵一眼」
 ```
+
 ### 【T7-03】预置牌组入库
 
 ```text
@@ -1953,6 +1990,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
   ✓ 3 个牌组可正常复习
   ✓ 事实性内容无错误
 ```
+
 ### 【T7-04】资质与合规
 
 ```text
@@ -1986,21 +2024,22 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 验收标准：
   ✓ 与实现一致
 ```
+
 ## ⌨ 需本机执行的事项
 
 以下 5 项 Trae 做不了，需要你在本地或走行政流程处理。
 
-| 编号 | 事项 | 为什么 Trae 做不了 | 何时 |
-|---|---|---|---|
-| **T0-01 / D-02** | 软件著作权申请 | 行政审批，周期数周至数月 | 第 0 周立即（最不可压缩） |
-| **T0-02 / D-11** | 商标网第 9 / 42 类查询 | 需登录商标网 | 第 0 周 |
-| **T0-03 / D-11** | 应用市场同名查询 | 需登录应用市场后台 | 第 0 周 |
-| **T0-04 / D-07** | 首批牌组场景选题 | 业务决策，决定冷启动抓手 | 第 0 周 |
-| **T0-05** | 编写 20 张样卡并计时 | 内容生产，需你亲自写 | 第 0 周（与开发并行） |
-| **T0-06 / D-03** | 确定正式包名并创建 AGC 应用 | 需 AGC 后台操作 | M1 建工程前 |
+| 编号               | 事项                    | 为什么 Trae 做不了             | 何时               |
+| ---------------- | --------------------- | ------------------------ | ---------------- |
+| **T0-01 / D-02** | 软件著作权申请               | 行政审批，周期数周至数月             | 第 0 周立即（最不可压缩）   |
+| **T0-02 / D-11** | 商标网第 9 / 42 类查询       | 需登录商标网                   | 第 0 周            |
+| **T0-03 / D-11** | 应用市场同名查询              | 需登录应用市场后台                | 第 0 周            |
+| **T0-04 / D-07** | 首批牌组场景选题              | 业务决策，决定冷启动抓手             | 第 0 周            |
+| **T0-05**        | 编写 20 张样卡并计时          | 内容生产，需你亲自写               | 第 0 周（与开发并行）     |
+| **T0-06 / D-03** | 确定正式包名并创建 AGC 应用      | 需 AGC 后台操作               | M1 建工程前          |
 | **T0-07 / D-01** | 生成黄金测试向量 vectors.json | 需 Rust 工具链联网拉 fsrs crate | M2 开始前（阻塞 T1-03） |
-| **T6-07 / D-08** | 隐私政策反馈邮箱与生效日期 | 必须是你能收信的真实邮箱 | M6 前 |
-| **T7-05** | 提交审核并跟踪 | 需应用市场后台操作 | M7 |
+| **T6-07 / D-08** | 隐私政策反馈邮箱与生效日期         | 必须是你能收信的真实邮箱             | M6 前             |
+| **T7-05**        | 提交审核并跟踪               | 需应用市场后台操作                | M7               |
 
 ### D-01 的具体操作
 
@@ -2010,7 +2049,7 @@ cargo run --release > vectors.json
 # 把 vectors.json 放回该目录，然后让 Trae 执行 T1-03
 ```
 
----
+***
 
 ## 一句话原则
 

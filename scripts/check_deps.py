@@ -23,7 +23,7 @@ import re
 import sys
 from collections import defaultdict
 
-ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..',
+ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..',
                     'entry', 'src', 'main', 'ets')
 
 # 层级：数字越小越底层
