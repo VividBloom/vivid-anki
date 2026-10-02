@@ -11,17 +11,7 @@
  */
 
 import { TimeUtil } from '../../common/utils/TimeUtil';
-
-/** 队列中的一张卡 */
-export interface QueueCard {
-  id: number;
-  deckId: number;
-  isNew: boolean;
-  stability: number;
-  difficulty: number;
-  lastReview: number;
-  due: number;
-}
+import { QueueCard } from '../../common/types/ReviewTypes';
 
 /** 队列构建配置 */
 export interface QueueConfig {

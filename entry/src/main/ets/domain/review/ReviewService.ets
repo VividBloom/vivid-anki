@@ -51,28 +51,15 @@ export class ReviewService {
       const settingsResult = await settingsDao.query(store);
       const newLimit = settingsResult.ok ? settingsResult.data.newLimit : 20;
 
-      // 2. 获取复习候选集
+      // 2. 获取复习候选集（轻量级查询）
       const tomorrowTs = TimeUtil.startOfTomorrow();
-      const candidatesResult = await cardDao.queryReviewCandidates(store, tomorrowTs, newLimit);
+      const candidatesResult = await cardDao.queryReviewQueueCandidates(store, tomorrowTs, newLimit);
       
       if (!candidatesResult.ok) {
         return this.emptyResult();
       }
 
-      // 3. 转换为队列格式
-      const queueCards: QueueCard[] = candidatesResult.data.map((c: CardEntity): QueueCard => {
-        return {
-          id: c.id!,
-          deckId: c.deckId,
-          isNew: c.state === 'new',
-          stability: c.stability,
-          difficulty: c.difficulty,
-          lastReview: c.lastReview || 0,
-          due: c.due
-        };
-      });
-
-      // 4. 构建队列
+      // 3. 构建队列
       const config: QueueConfig = {
         newLimit: newLimit,
         reviewLimit: null, // 全量复习
@@ -80,7 +67,7 @@ export class ReviewService {
         returnQuota: 0
       };
 
-      return ReviewQueue.build(queueCards, config);
+      return ReviewQueue.build(candidatesResult.data, config);
     } catch (e) {
       LogUtil.e(ReviewService.TAG, '获取今日摘要失败: ' + JSON.stringify(e));
       return this.emptyResult();

@@ -2,6 +2,7 @@ import { relationalStore } from '@kit.ArkData';
 import { Result, ErrorCode } from '../../common/utils/Result';
 import { LogUtil } from '../../common/utils/LogUtil';
 import { TimeUtil } from '../../common/utils/TimeUtil';
+import { QueueCard } from '../../common/types/ReviewTypes';
 
 /**
  * 记忆要点实体（Card Entity）
@@ -245,6 +246,64 @@ export default class CardDao {
     } catch (e) {
       return Result.success(0);
     }
+  }
+
+  /**
+   * 查找复习候选集（轻量级，仅返回队列所需字段，以应对大数据量性能要求）
+   * 
+   * @param tomorrowTs 次日零点时间戳
+   * @param newLimit   新卡上限
+   */
+  async queryReviewQueueCandidates(store: relationalStore.RdbStore, tomorrowTs: number, newLimit: number): Promise<Result<QueueCard[]>> {
+    try {
+      // 分两步查询，确保每一路都能命中索引且避免 OR 带来的性能抖动
+      const cards: QueueCard[] = [];
+
+      // 1. 获取到期卡
+      const dueSql = `
+        SELECT id, deck_id, state, stability, difficulty, last_review, due 
+        FROM card 
+        WHERE deleted_at IS NULL AND suspended = 0 AND state != 'new' AND due < ?
+        ORDER BY due ASC
+      `;
+      const dueResultSet = await store.querySql(dueSql, [tomorrowTs]);
+      while (dueResultSet.goToNextRow()) {
+        cards.push(this.parseQueueCard(dueResultSet));
+      }
+      dueResultSet.close();
+
+      // 2. 获取新卡
+      const newSql = `
+        SELECT id, deck_id, state, stability, difficulty, last_review, due 
+        FROM card 
+        WHERE deleted_at IS NULL AND suspended = 0 AND state = 'new'
+        ORDER BY id ASC
+        LIMIT ?
+      `;
+      const newResultSet = await store.querySql(newSql, [newLimit]);
+      while (newResultSet.goToNextRow()) {
+        cards.push(this.parseQueueCard(newResultSet));
+      }
+      newResultSet.close();
+
+      return Result.success(cards);
+    } catch (e) {
+      LogUtil.e(CardDao.TAG, '查询复习队列候选集失败: ' + JSON.stringify(e));
+      return Result.success([]);
+    }
+  }
+
+  private parseQueueCard(resultSet: relationalStore.ResultSet): QueueCard {
+    const state = resultSet.getString(resultSet.getColumnIndex('state'));
+    return {
+      id: resultSet.getLong(resultSet.getColumnIndex('id')),
+      deckId: resultSet.getLong(resultSet.getColumnIndex('deck_id')),
+      isNew: state === 'new',
+      stability: resultSet.getDouble(resultSet.getColumnIndex('stability')),
+      difficulty: resultSet.getDouble(resultSet.getColumnIndex('difficulty')),
+      lastReview: resultSet.getLong(resultSet.getColumnIndex('last_review')),
+      due: resultSet.getLong(resultSet.getColumnIndex('due'))
+    };
   }
 
   private parseResultSet(resultSet: relationalStore.ResultSet): CardEntity[] {
