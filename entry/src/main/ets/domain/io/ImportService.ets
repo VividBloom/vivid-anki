@@ -89,38 +89,58 @@ export class ImportService {
     const ourStore = await DbHelper.getInstance(ctx);
     
     return await DbHelper.inTransaction(ourStore, async (): Promise<number> => {
+      // 0. 获取全局新卡上限
+      const settingsRs = await ourStore.querySql('SELECT new_limit FROM user_settings WHERE id = 1');
+      let globalNewLimit = 20;
+      if (settingsRs.goToFirstRow()) {
+        globalNewLimit = settingsRs.getLong(0);
+      }
+      settingsRs.close();
+
       // 1. 读取 Anki 合集定义 (JSON)
       const decksJson = await this.fetchAnkiDecks(ankiStore);
       const deckMap = new Map<number, number>(); // AnkiID -> OurID
+      const deckBatchOffsetMap = new Map<number, number>(); // OurID -> CurrentBatchOffset
 
       // 2. 导入合集
       for (const ankiId of Object.keys(decksJson)) {
         const deck = decksJson[ankiId];
         if (deck.name === 'Default' && deck.id === 1) continue; // 跳过默认项
 
-        const res = await ourStore.executeSql(
+        await ourStore.executeSql(
           'INSERT INTO deck (name, created_at, updated_at) VALUES (?, ?, ?)',
           [deck.name, TimeUtil.now(), TimeUtil.now()]
         );
-        // 获取自增 ID
-        const resultSet = await ourStore.querySql('SELECT last_insert_rowid() as id');
+        const resultSet = await ourStore.querySql('SELECT last_insert_rowid()');
         if (resultSet.goToFirstRow()) {
-          deckMap.set(Number(ankiId), resultSet.getLong(0));
+          const ourId = resultSet.getLong(0);
+          deckMap.set(Number(ankiId), ourId);
+          deckBatchOffsetMap.set(ourId, 0);
         }
         resultSet.close();
       }
 
       // 兜底：如果没映射到任何合集，使用内置默认合集
       const defaultDeckId = await this.ensureDefaultDeck(ourStore);
+      if (!deckBatchOffsetMap.has(defaultDeckId)) {
+        const offsetRs = await ourStore.querySql('SELECT batch_offset FROM deck WHERE id = ?', [defaultDeckId]);
+        if (offsetRs.goToFirstRow()) {
+          deckBatchOffsetMap.set(defaultDeckId, offsetRs.getLong(0));
+        }
+        offsetRs.close();
+      }
       
       // 3. 导入笔记与卡片
       const cardSql = `
-        SELECT c.id as anki_cid, c.did, c.due, c.type, c.queue, c.ivl, c.factor, c.reps, c.lapses, n.flds 
+        SELECT c.id as anki_cid, c.did, c.due as anki_due, c.type, c.queue, c.ivl, c.factor, c.reps, c.lapses, n.flds 
         FROM cards c JOIN notes n ON c.nid = n.id
+        ORDER BY c.did, c.due, c.id
       `;
       const resultSet = await ankiStore.querySql(cardSql);
       let count = 0;
       const cardMap = new Map<number, number>(); // AnkiCID -> OurCID
+      const startOfToday = TimeUtil.startOfToday();
+      const newCardCounter = new Map<number, number>(); // deckId -> countOfNewCardsInThisImport
 
       while (resultSet.goToNextRow()) {
         const ankiCid = resultSet.getLong(resultSet.getColumnIndex('anki_cid'));
@@ -132,14 +152,26 @@ export class ImportService {
         const back = fields.slice(1).join('<br>') || '';
         
         const targetDeckId = deckMap.get(ankiDid) || defaultDeckId;
-        const state = this.mapAnkiState(resultSet.getLong(resultSet.getColumnIndex('type')));
+        const ankiType = resultSet.getLong(resultSet.getColumnIndex('type'));
+        const state = this.mapAnkiState(ankiType);
+        
+        // 计算分批 due
+        let finalDue = resultSet.getLong(resultSet.getColumnIndex('anki_due'));
+        if (state === 'new') {
+          const currentOffset = deckBatchOffsetMap.get(targetDeckId) || 0;
+          const importIndex = newCardCounter.get(targetDeckId) || 0;
+          // 按每日上限分批安排
+          const dayIndex = Math.floor((currentOffset + importIndex) / globalNewLimit);
+          finalDue = startOfToday + dayIndex * 86400000 + (importIndex % globalNewLimit);
+          newCardCounter.set(targetDeckId, importIndex + 1);
+        }
         
         await ourStore.executeSql(
           `INSERT INTO card (deck_id, front, back, state, due, reps, lapses, source, created_at, updated_at) 
            VALUES (?, ?, ?, ?, ?, ?, ?, 'import', ?, ?)`,
           [
             targetDeckId, front, back, state, 
-            resultSet.getLong(resultSet.getColumnIndex('due')),
+            finalDue,
             resultSet.getLong(resultSet.getColumnIndex('reps')),
             resultSet.getLong(resultSet.getColumnIndex('lapses')),
             TimeUtil.now(), TimeUtil.now()
@@ -156,6 +188,7 @@ export class ImportService {
       resultSet.close();
 
       // 4. 导入复习日志
+      // ... (existing code for revlog)
       const revlogSql = `SELECT cid, ease, ivl, lastIvl, factor, time, type FROM revlog`;
       const revRs = await ankiStore.querySql(revlogSql);
       while (revRs.goToNextRow()) {
@@ -163,7 +196,12 @@ export class ImportService {
         const ourCid = cardMap.get(ankiCid);
         if (!ourCid) continue;
 
-        const reviewedAt = revRs.getLong(revRs.getColumnIndex('id') || revRs.getColumnIndex('time'));
+        let reviewedAt = 0;
+        try {
+          reviewedAt = revRs.getLong(revRs.getColumnIndex('id'));
+        } catch (e) {
+          reviewedAt = revRs.getLong(revRs.getColumnIndex('time'));
+        }
         
         await ourStore.executeSql(
           `INSERT INTO revlog (card_id, rating, elapsed_days, reviewed_at, stability_before, difficulty_before, reps_before, lapses_before, stability_after, difficulty_after, interval_after, created_at)
@@ -180,15 +218,22 @@ export class ImportService {
       }
       revRs.close();
 
-      // 5. 统一更新合集计数
-      for (const ourDeckId of deckMap.values()) {
+      // 5. 统一更新合集计数与 batch_offset
+      for (const ourDeckId of deckBatchOffsetMap.keys()) {
+        const addedNew = newCardCounter.get(ourDeckId) || 0;
+        const oldOffset = deckBatchOffsetMap.get(ourDeckId) || 0;
+        
+        await ourStore.executeSql(
+          'UPDATE deck SET batch_offset = ? WHERE id = ?',
+          [oldOffset + addedNew, ourDeckId]
+        );
         await this.recalcDeckCounts(ourStore, ourDeckId);
       }
-      await this.recalcDeckCounts(ourStore, defaultDeckId);
 
       // 6. 更新导入统计
       await this.dailyStatsDao.increment(ourStore, { importCount: count });
 
+      LogUtil.i(ImportService.TAG, `导入完成，共 ${count} 张，已按每天 ${globalNewLimit} 张分批安排。`);
       return count;
     });
   }

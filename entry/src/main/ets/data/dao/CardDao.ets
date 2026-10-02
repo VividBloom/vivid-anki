@@ -297,11 +297,11 @@ export default class CardDao {
       const newSql = `
         SELECT id, deck_id, state, stability, difficulty, last_review, due 
         FROM card 
-        WHERE deleted_at IS NULL AND suspended = 0 AND state = 'new'
-        ORDER BY id ASC
+        WHERE deleted_at IS NULL AND suspended = 0 AND state = 'new' AND due < ?
+        ORDER BY due ASC, id ASC
         LIMIT ?
       `;
-      const newResultSet = await store.querySql(newSql, [newLimit]);
+      const newResultSet = await store.querySql(newSql, [tomorrowTs, newLimit]);
       while (newResultSet.goToNextRow()) {
         cards.push(this.parseQueueCard(newResultSet));
       }

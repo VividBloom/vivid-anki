@@ -56,7 +56,11 @@ export class ReviewQueue {
       .sort((a, b) => a.due - b.due);
 
     // 2. 新卡：按创建顺序（数组原序）补到上限
-    const newCards = allCards.filter((c) => c.isNew);
+    // 增加 due < tomorrow 过滤，配合 ImportService 的分批 staggered due 逻辑，
+    // 防止第一天导入几千张后被淹没。
+    const newCards = allCards
+      .filter((c) => c.isNew && c.due < tomorrow)
+      .sort((a, b) => a.due - b.due || a.id - b.id);
 
     let reviewTake = dueCards;
     if (config.reviewLimit !== null && config.reviewLimit > 0) {
