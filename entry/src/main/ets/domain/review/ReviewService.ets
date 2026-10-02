@@ -5,6 +5,7 @@ import CardDao, { CardEntity } from '../../data/dao/CardDao';
 import SettingsDao from '../../data/dao/SettingsDao';
 import RevlogDao from '../../data/dao/RevlogDao';
 import DailyStatsDao from '../../data/dao/DailyStatsDao';
+import SessionDao from '../../data/dao/SessionDao';
 import { ReviewQueue, QueueConfig, QueueResult, QueueCard } from '../scheduler/ReviewQueue';
 import { FsrsScheduler, MemoryState, Rating } from '../scheduler/FsrsScheduler';
 import { TimeUtil } from '../../common/utils/TimeUtil';
@@ -86,12 +87,17 @@ export class ReviewService {
   /**
    * 评分落盘（核心操作原子性）
    */
-  async rateCard(ctx: common.UIAbilityContext, cardId: number, rating: Rating, durationMs: number): Promise<boolean> {
+  async rateCard(ctx: common.UIAbilityContext, cardId: number, rating: Rating, durationMs: number, sessionInfo?: {
+    sessionId: string,
+    completed: number,
+    lastPosition: number
+  }): Promise<boolean> {
     const store = await DbHelper.getInstance(ctx);
     const cardDao = new CardDao();
     const revlogDao = new RevlogDao();
     const statsDao = new DailyStatsDao();
     const settingsDao = new SettingsDao();
+    const sessionDao = new SessionDao();
 
     return await DbHelper.inTransaction(store, async () => {
       // 1. 获取卡片当前状态
@@ -148,6 +154,15 @@ export class ReviewService {
         correctCount: rating >= Rating.Good ? 1 : 0,
         durationMs: durationMs
       });
+
+      // 6. 更新会话进度（如果提供了会话信息）
+      if (sessionInfo) {
+        await sessionDao.updateProgress(store, sessionInfo.sessionId, {
+          completed: sessionInfo.completed,
+          lastCardId: cardId,
+          lastPosition: sessionInfo.lastPosition
+        });
+      }
 
       return true;
     });

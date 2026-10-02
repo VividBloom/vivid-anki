@@ -1,7 +1,8 @@
 import { common } from '@kit.AbilityKit';
-import { router } from '@kit.ArkUI';
+import { router, promptAction } from '@kit.ArkUI';
 import { ReviewService } from '../../domain/review/ReviewService';
-import { QueueResult } from '../../domain/scheduler/ReviewQueue';
+import { ResumeService } from '../../domain/session/ResumeService';
+import { QueueResult } from '../../common/types/ReviewTypes';
 
 /**
  * 今日任务概览页
@@ -12,6 +13,7 @@ import { QueueResult } from '../../domain/scheduler/ReviewQueue';
 @Component
 export struct TodayPage {
   private reviewService: ReviewService = new ReviewService();
+  private resumeService: ResumeService = new ResumeService();
   
   @State summary: QueueResult = {
     cards: [],
@@ -26,11 +28,49 @@ export struct TodayPage {
     const ctx = getContext(this) as common.UIAbilityContext;
     try {
       this.summary = await this.reviewService.getTodaySummary(ctx);
+      
+      // 检测活跃会话
+      const activeSession = await this.resumeService.checkActiveSession(ctx);
+      if (activeSession && activeSession.completed > 0) {
+        this.showResumeDialog(ctx, activeSession.sessionId, activeSession.completed);
+      }
     } catch (e) {
       // 失败保持默认空态
     } finally {
       this.isLoading = false;
     }
+  }
+
+  private showResumeDialog(ctx: common.UIAbilityContext, sessionId: string, completed: number) {
+    promptAction.showDialog({
+      title: '继续之前的学习？',
+      message: `已完成 ${completed} 个要点，进度已保存。`,
+      buttons: [
+        {
+          text: '今天先到这里',
+          color: '#666666'
+        },
+        {
+          text: '继续学习',
+          color: '#007DFF'
+        }
+      ]
+    }).then((data) => {
+      if (data.index === 1) {
+        // 继续学习
+        router.pushUrl({
+          url: 'ui/pages/ReviewPage',
+          params: {
+            queue: this.summary.cards,
+            sessionId: sessionId,
+            startIndex: completed
+          }
+        });
+      } else {
+        // 放弃会话
+        this.resumeService.abandonSession(ctx, sessionId);
+      }
+    });
   }
 
   build() {

@@ -1,7 +1,8 @@
 import { common } from '@kit.AbilityKit';
 import { router } from '@kit.ArkUI';
 import { ReviewService, ReviewCard } from '../../domain/review/ReviewService';
-import { QueueCard } from '../../domain/scheduler/ReviewQueue';
+import { ResumeService } from '../../domain/session/ResumeService';
+import { QueueCard } from '../../common/types/ReviewTypes';
 import { Rating } from '../../domain/scheduler/FsrsScheduler';
 import { RatingBar } from '../components/RatingBar';
 import { LogUtil } from '../../common/utils/LogUtil';
@@ -18,6 +19,7 @@ import { LogUtil } from '../../common/utils/LogUtil';
 @Component
 struct ReviewPage {
   private reviewService: ReviewService = new ReviewService();
+  private resumeService: ResumeService = new ResumeService();
   
   @State queue: QueueCard[] = [];
   @State currentIndex: number = 0;
@@ -26,6 +28,7 @@ struct ReviewPage {
   @State isLoading: boolean = true;
   @State startTime: number = 0;
   @State isLeftHanded: boolean = false;
+  @State sessionId: string = '';
 
   async aboutToAppear(): Promise<void> {
     const ctx = getContext(this) as common.UIAbilityContext;
@@ -40,13 +43,21 @@ struct ReviewPage {
 
       if (params && params.queue) {
         this.queue = params.queue as QueueCard[];
+        this.sessionId = params.sessionId as string || '';
+        this.currentIndex = params.startIndex as number || 0;
       } else {
         const summary = await this.reviewService.getTodaySummary(ctx);
         this.queue = summary.cards;
       }
       
-      if (this.queue.length > 0) {
-        await this.loadCard(this.queue[0].id);
+      // 如果没有会话 ID 且队列不为空，则开启新会话
+      if (!this.sessionId && this.queue.length > 0) {
+        const id = await this.resumeService.startSession(ctx, this.queue.length);
+        if (id) this.sessionId = id;
+      }
+
+      if (this.queue.length > 0 && this.currentIndex < this.queue.length) {
+        await this.loadCard(this.queue[this.currentIndex].id);
       } else {
         router.back();
       }
@@ -72,13 +83,21 @@ struct ReviewPage {
     const ctx = getContext(this) as common.UIAbilityContext;
     
     try {
-      await this.reviewService.rateCard(ctx, this.currentCard.id!, rating, duration);
+      // 评分落盘并同步更新会话进度
+      await this.reviewService.rateCard(ctx, this.currentCard.id!, rating, duration, {
+        sessionId: this.sessionId,
+        completed: this.currentIndex + 1,
+        lastPosition: this.currentIndex
+      });
       
       this.currentIndex++;
       if (this.currentIndex < this.queue.length) {
         await this.loadCard(this.queue[this.currentIndex].id);
       } else {
-        // 完成复习，跳转至收尾页
+        // 完成复习，结束会话并跳转至收尾页
+        if (this.sessionId) {
+          await this.resumeService.finishSession(ctx, this.sessionId);
+        }
         router.replaceUrl({ url: 'ui/pages/DonePage' });
       }
     } catch (e) {
