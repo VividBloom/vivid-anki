@@ -4,6 +4,8 @@
     "ui/pages/ReviewPage",
     "ui/pages/DonePage",
     "ui/pages/OnboardPage",
-    "ui/pages/CreateCardPage"
+    "ui/pages/CreateCardPage",
+    "ui/pages/CardsPage",
+    "ui/pages/StatsPage"
   ]
 }

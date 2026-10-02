@@ -7,6 +7,7 @@ import RevlogDao from '../../data/dao/RevlogDao';
 import DailyStatsDao from '../../data/dao/DailyStatsDao';
 import SessionDao from '../../data/dao/SessionDao';
 import MediaDao, { MediaEntity } from '../../data/dao/MediaDao';
+import { StatsService } from '../stats/StatsService';
 import { ReviewQueue, QueueConfig, QueueResult, QueueCard } from '../scheduler/ReviewQueue';
 import { FsrsScheduler, MemoryState, Rating } from '../scheduler/FsrsScheduler';
 import { TimeUtil } from '../../common/utils/TimeUtil';
@@ -260,20 +261,9 @@ export class ReviewService {
       const todayCount = todayStats.ok && todayStats.data ? todayStats.data.reviewCount : 0;
 
       // 2. 计算连续天数 (Streak)
-      const recentStats = await statsDao.queryRecent(store, 31); // 查一个月
-      let streakDays = 0;
-      if (recentStats.ok && recentStats.data.length > 0) {
-        const stats = recentStats.data;
-        // 按日期排序，从新到旧
-        let checkDate = new Date();
-        const studyDates = new Set(stats.filter(s => s.reviewCount > 0).map(s => s.date));
-        
-        // 从今天开始往前数
-        while (studyDates.has(TimeUtil.todayKey(checkDate.getTime()))) {
-          streakDays++;
-          checkDate.setDate(checkDate.getDate() - 1);
-        }
-      }
+      const statsService = new StatsService();
+      const recentStats = await statsDao.queryRecent(store, 365);
+      const streakDays = recentStats.ok ? statsService.calculateStreak(recentStats.data) : 0;
 
       // 3. 明日预告 (次日零点到后天零点)
       const tomorrowStart = TimeUtil.startOfTomorrow();
