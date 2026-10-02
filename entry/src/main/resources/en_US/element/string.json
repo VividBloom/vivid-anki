@@ -1,0 +1,32 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "Glance"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "Glance"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "Glance"
+    },
+    {
+      "name": "perm_internet_reason",
+      "value": "For AI card generation and deck download"
+    },
+    {
+      "name": "perm_camera_reason",
+      "value": "For creating cards from photos of notes"
+    },
+    {
+      "name": "perm_microphone_reason",
+      "value": "For recording card pronunciation"
+    },
+    {
+      "name": "perm_reminder_reason",
+      "value": "For reminding you to review at your chosen time"
+    }
+  ]
+}

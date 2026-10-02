@@ -1,0 +1,8 @@
+[package]
+name = "fsrs_golden"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+fsrs = { version = "4", default-features = false }
+serde_json = "1"
