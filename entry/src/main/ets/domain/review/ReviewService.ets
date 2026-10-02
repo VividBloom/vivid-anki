@@ -6,6 +6,7 @@ import SettingsDao from '../../data/dao/SettingsDao';
 import RevlogDao from '../../data/dao/RevlogDao';
 import DailyStatsDao from '../../data/dao/DailyStatsDao';
 import SessionDao from '../../data/dao/SessionDao';
+import MediaDao, { MediaEntity } from '../../data/dao/MediaDao';
 import { ReviewQueue, QueueConfig, QueueResult, QueueCard } from '../scheduler/ReviewQueue';
 import { FsrsScheduler, MemoryState, Rating } from '../scheduler/FsrsScheduler';
 import { TimeUtil } from '../../common/utils/TimeUtil';
@@ -26,6 +27,7 @@ export interface ReviewCard {
   lastReview?: number;
   reps: number;
   lapses: number;
+  mediaRefs?: number[];
 }
 
 /**
@@ -203,7 +205,8 @@ export class ReviewService {
       state: c.state,
       lastReview: c.lastReview,
       reps: c.reps,
-      lapses: c.lapses
+      lapses: c.lapses,
+      mediaRefs: c.mediaRefs ? JSON.parse(c.mediaRefs) as number[] : []
     };
   }
 
@@ -215,6 +218,31 @@ export class ReviewService {
     const settingsDao = new SettingsDao();
     const result = await settingsDao.query(store);
     return result.ok ? result.data : null;
+  }
+
+  /**
+   * 获取媒体详情
+   */
+  async getMediaDetails(ctx: common.UIAbilityContext, ids: number[]): Promise<MediaEntity[]> {
+    const store = await DbHelper.getInstance(ctx);
+    const mediaDao = new MediaDao();
+    const results: MediaEntity[] = [];
+    
+    for (const id of ids) {
+      const res = await store.querySql('SELECT * FROM media WHERE id = ?', [id]);
+      if (res.goToNextRow()) {
+        results.push({
+          id: res.getLong(res.getColumnIndex('id')),
+          type: res.getString(res.getColumnIndex('type')),
+          localPath: res.getString(res.getColumnIndex('local_path')),
+          fileSize: res.getLong(res.getColumnIndex('file_size')),
+          refCount: res.getLong(res.getColumnIndex('ref_count')),
+          createdAt: res.getLong(res.getColumnIndex('created_at'))
+        });
+      }
+      res.close();
+    }
+    return results;
   }
 
   /**

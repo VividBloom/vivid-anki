@@ -3,6 +3,7 @@ import { relationalStore } from '@kit.ArkData';
 import { DbHelper } from '../../data/db/DbHelper';
 import CardDao, { CardEntity } from '../../data/dao/CardDao';
 import DeckDao, { DeckEntity } from '../../data/dao/DeckDao';
+import { MediaService } from './MediaService';
 import { Result, ErrorCode } from '../../common/utils/Result';
 import { TimeUtil } from '../../common/utils/TimeUtil';
 import { ParsedItem } from './CardParseService';
@@ -17,6 +18,7 @@ import { ParsedItem } from './CardParseService';
 export class CardService {
   private cardDao = new CardDao();
   private deckDao = new DeckDao();
+  private mediaService = new MediaService();
 
   /**
    * 创建新要点
@@ -29,7 +31,8 @@ export class CardService {
   async createCard(ctx: common.UIAbilityContext, front: string, back: string, options?: {
     deckId?: number,
     cardType?: string,
-    extra?: string
+    extra?: string,
+    mediaIds?: number[]
   }): Promise<Result<number>> {
     const store = await DbHelper.getInstance(ctx);
     
@@ -58,8 +61,16 @@ export class CardService {
       if (!cardResult.ok) {
         throw new Error(cardResult.message);
       }
+      
+      const cardId = cardResult.data;
 
-      // 3. 更新项目的计数冗余字段
+      // 3. 处理媒体引用
+      if (options?.mediaIds && options.mediaIds.length > 0) {
+        const mediaRes = await this.mediaService.syncCardMediaRefs(store, cardId, options.mediaIds);
+        if (!mediaRes.ok) throw new Error(mediaRes.message);
+      }
+
+      // 4. 更新项目的计数冗余字段
       await this.deckDao.recalcCounts(store, deckId, TimeUtil.now());
 
       return cardResult;

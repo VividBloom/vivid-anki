@@ -7,7 +7,9 @@ import { QueueCard } from '../../common/types/ReviewTypes';
 import { Rating } from '../../domain/scheduler/FsrsScheduler';
 import { RatingBar } from '../components/RatingBar';
 import { CardTypeService, RenderedContent } from '../../domain/card/CardTypeService';
+import { MediaService } from '../../domain/card/MediaService';
 import { LogUtil } from '../../common/utils/LogUtil';
+import { media } from '@kit.MediaKit';
 
 /**
  * 复习核心页
@@ -24,6 +26,7 @@ struct ReviewPage {
   private resumeService: ResumeService = new ResumeService();
   private undoService: UndoService = new UndoService();
   private typeService: CardTypeService = new CardTypeService();
+  private mediaService: MediaService = new MediaService();
   
   @State queue: QueueCard[] = [];
   @State currentIndex: number = 0;
@@ -36,6 +39,8 @@ struct ReviewPage {
   @State showUndoSnackbar: boolean = false;
   @State snackbarText: string = '';
   @State snackbarAction: string = '';
+  @State audioPlayer: media.AVPlayer | null = null;
+  @State mediaDetails: Map<number, string> = new Map(); // id -> absPath
   private snackbarTimer: number = 0;
   private lastRating: Rating | null = null;
   private lastDuration: number = 0;
@@ -79,11 +84,89 @@ struct ReviewPage {
     }
   }
 
+  async aboutToDisappear() {
+    if (this.audioPlayer) {
+      await this.audioPlayer.release();
+    }
+  }
+
+  private async playAudio(path: string) {
+    try {
+      if (!this.audioPlayer) {
+        this.audioPlayer = await media.createAVPlayer();
+      } else {
+        await this.audioPlayer.reset();
+      }
+      
+      this.audioPlayer.url = `file://${path}`;
+      this.audioPlayer.on('stateChange', (state) => {
+        if (state === 'initialized') {
+          this.audioPlayer?.prepare();
+        } else if (state === 'prepared') {
+          this.audioPlayer?.play();
+        }
+      });
+    } catch (e) {
+      LogUtil.e('ReviewPage', '播放音频失败: ' + JSON.stringify(e));
+    }
+  }
+
+  @Builder
+  MediaSection(mediaIds: number[]) {
+    Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Center }) {
+      ForEach(mediaIds, (id: number) => {
+        if (this.mediaDetails.has(id)) {
+          this.MediaItem(id, this.mediaDetails.get(id)!)
+        }
+      }, (id: number) => id.toString())
+    }
+    .width('100%')
+    .margin({ top: 12 })
+  }
+
+  @Builder
+  MediaItem(id: number, path: string) {
+    if (path.endsWith('.mp3') || path.endsWith('.wav') || path.endsWith('.m4a')) {
+      Button() {
+        Image($r('app.media.ic_public_sound'))
+          .width(24)
+          .height(24)
+      }
+      .variant(ButtonVariant.Circle)
+      .backgroundColor('#E3F2FD')
+      .margin(4)
+      .onClick((e) => {
+        e.stopPropagation();
+        this.playAudio(path);
+      })
+    } else {
+      Image(`file://${path}`)
+        .width(100)
+        .height(100)
+        .objectFit(ImageFit.Contain)
+        .borderRadius(8)
+        .margin(4)
+        .onClick((e) => {
+          e.stopPropagation();
+          // 可以做大图预览
+        })
+    }
+  }
+
   async loadCard(cardId: number) {
     const ctx = getContext(this) as common.UIAbilityContext;
     this.currentCard = await this.reviewService.getCardDetail(ctx, cardId);
     this.isFlipped = false;
     this.startTime = Date.now();
+    
+    // 加载媒体详情
+    if (this.currentCard?.mediaRefs && this.currentCard.mediaRefs.length > 0) {
+      const details = await this.reviewService.getMediaDetails(ctx, this.currentCard.mediaRefs);
+      this.mediaDetails.clear();
+      details.forEach(m => {
+        this.mediaDetails.set(m.id!, this.mediaService.getAbsPath(ctx, m.localPath));
+      });
+    }
   }
 
   async handleRate(rating: Rating) {
@@ -195,10 +278,14 @@ struct ReviewPage {
             if (!this.isFlipped) {
               // 正面
               Text(this.typeService.getRenderedContent(this.currentCard.front, this.currentCard.back, this.currentCard.cardType, false).question)
-                .fontSize(32)
-                .fontWeight(FontWeight.Bold)
-                .textAlign(TextAlign.Center)
-                .padding(24)
+                    .fontSize(32)
+                    .fontWeight(FontWeight.Bold)
+                    .textAlign(TextAlign.Center)
+                    .padding(24)
+                  
+                  if (this.currentCard.mediaRefs && this.currentCard.mediaRefs.length > 0) {
+                    this.MediaSection(this.currentCard.mediaRefs)
+                  }
             } else {
               // 背面
               Scroll() {
