@@ -249,7 +249,7 @@ export class DeckLifecycleService {
       '                WHERE deck_id = ? AND deleted_at IS NULL ' +
       '                AND suspended = 0 AND state <> \'new\' AND due <= ?), ' +
       '  updated_at = ? ' +
-      'WHERE id = ?',
+      'WHERE id = ? AND deleted_at IS NULL',
       [deckId, deckId, nowTs, nowTs, deckId] as Array<relationalStore.ValueType>
     );
   }

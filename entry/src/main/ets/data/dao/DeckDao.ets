@@ -115,7 +115,7 @@ export default class DeckDao {
       valueBucket['updated_at'] = TimeUtil.now();
 
       const predicates = new relationalStore.RdbPredicates(DeckDao.TABLE_NAME);
-      predicates.equalTo('id', id);
+      predicates.equalTo('id', id).isNull('deleted_at');
       
       const rows = await store.update(valueBucket, predicates);
       return Result.success(rows);
@@ -139,7 +139,7 @@ export default class DeckDao {
         'updated_at': TimeUtil.now()
       };
       const predicates = new relationalStore.RdbPredicates(DeckDao.TABLE_NAME);
-      predicates.equalTo('id', id);
+      predicates.equalTo('id', id).isNull('deleted_at');
       const rows = await store.update(valueBucket, predicates);
       return Result.success(rows);
     } catch (e) {
@@ -154,11 +154,11 @@ export default class DeckDao {
   async recalcCounts(store: relationalStore.RdbStore, deckId: number, nowTs: number): Promise<Result<void>> {
     try {
       // 1. 计算总数
-      const sqlTotal = `UPDATE deck SET card_count = (SELECT count(*) FROM card WHERE deck_id = ? AND deleted_at IS NULL) WHERE id = ?`;
+      const sqlTotal = `UPDATE deck SET card_count = (SELECT count(*) FROM card WHERE deck_id = ? AND deleted_at IS NULL) WHERE id = ? AND deleted_at IS NULL`;
       await store.executeSql(sqlTotal, [deckId, deckId]);
 
       // 2. 计算到期数
-      const sqlDue = `UPDATE deck SET due_count = (SELECT count(*) FROM card WHERE deck_id = ? AND due <= ? AND suspended = 0 AND deleted_at IS NULL) WHERE id = ?`;
+      const sqlDue = `UPDATE deck SET due_count = (SELECT count(*) FROM card WHERE deck_id = ? AND due <= ? AND suspended = 0 AND deleted_at IS NULL) WHERE id = ? AND deleted_at IS NULL`;
       await store.executeSql(sqlDue, [deckId, nowTs, deckId]);
 
       return Result.success(undefined);

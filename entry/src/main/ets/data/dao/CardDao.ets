@@ -124,7 +124,7 @@ export default class CardDao {
   async queryById(store: relationalStore.RdbStore, id: number): Promise<Result<CardEntity | null>> {
     try {
       const predicates = new relationalStore.RdbPredicates(CardDao.TABLE_NAME);
-      predicates.equalTo('id', id);
+      predicates.equalTo('id', id).isNull('deleted_at');
       const resultSet = await store.query(predicates);
       const cards = this.parseResultSet(resultSet);
       resultSet.close();
