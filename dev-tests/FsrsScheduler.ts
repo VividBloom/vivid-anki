@@ -113,11 +113,11 @@ export class FsrsScheduler {
     if (params.length !== 21) {
       throw new Error('FSRS-6 参数必须恰好 21 个，实际为 ' + params.length);
     }
-    this.w = params;
+    this.w = params.map(v => Math.fround(v));
     // 遗忘曲线：R(t,S) = (1 + FACTOR * t / S) ^ DECAY
-    this.decay = -params[20];
+    this.decay = Math.fround(-this.w[20]);
     // FACTOR 由 DECAY 导出，以保证恒等式 R(S, S) === 0.9 成立
-    this.factor = Math.pow(0.9, 1 / this.decay) - 1;
+    this.factor = Math.fround(Math.fround(Math.pow(Math.fround(0.9), Math.fround(1 / this.decay))) - 1);
   }
 
   // ---------------- 遗忘曲线 ----------------
@@ -131,7 +131,11 @@ export class FsrsScheduler {
       // 新卡没有稳定性；返回 0 并由调用方走初始化分支
       return 0;
     }
-    return Math.pow(1 + this.factor * elapsedDays / stability, this.decay);
+    const t = Math.fround(elapsedDays);
+    const s = Math.fround(stability);
+    const ratio = Math.fround(t / s);
+    const inner = Math.fround(1 + Math.fround(this.factor * ratio));
+    return Math.fround(Math.pow(inner, this.decay));
   }
 
   /**
@@ -139,9 +143,12 @@ export class FsrsScheduler {
    * 恒等式：nextInterval(s, 0.9) === s（误差应 < 1e-9）
    */
   nextInterval(stability: number, desiredRetention: number): number {
-    const dr = this.clampRetention(desiredRetention);
-    const raw = (stability / this.factor) * (Math.pow(dr, 1 / this.decay) - 1);
-    return Math.max(raw, 0);
+    const dr = Math.fround(this.clampRetention(desiredRetention));
+    const s = Math.fround(stability);
+    const p = Math.fround(1 / this.decay);
+    const drPow = Math.fround(Math.pow(dr, p));
+    const raw = Math.fround(Math.fround(s / this.factor) * Math.fround(drPow - 1));
+    return Math.fround(Math.max(raw, 0));
   }
 
   // ---------------- 初始化（新卡分支） ----------------
@@ -155,11 +162,17 @@ export class FsrsScheduler {
   }
 
   /**
+   * 初始难度（不钳制），用于均值回归目标。
+   */
+  private initDifficultyRaw(rating: number): number {
+    return Math.fround(this.w[4] - Math.fround(Math.exp(this.w[5] * (rating - 1))) + 1);
+  }
+
+  /**
    * 初始难度：D0(G) = clamp(w4 - e^(w5*(G-1)) + 1, 1, 10)
    */
   initDifficulty(rating: number): number {
-    const raw = this.w[4] - Math.exp(this.w[5] * (rating - 1)) + 1;
-    return this.clampDifficulty(raw);
+    return this.clampDifficulty(this.initDifficultyRaw(rating));
   }
 
   // ---------------- 更新（老卡分支） ----------------
@@ -168,10 +181,12 @@ export class FsrsScheduler {
    * 难度更新：先按评分做增量，再向 D0(Easy) 做均值回归，防止漂移。
    */
   nextDifficulty(difficulty: number, rating: number): number {
-    const delta = -this.w[6] * (rating - 3);
-    // 难度越高，可调整空间越小（乘 (10-D)/9）
-    const dPrime = difficulty + delta * ((10 - difficulty) / 9);
-    const reverted = this.w[7] * this.initDifficulty(Rating.Good) + (1 - this.w[7]) * dPrime;
+    const delta = Math.fround(-this.w[6] * (rating - 3));
+    // FSRS-6 使用线性阻尼，以保证难度在 [1, 10] 之间平滑移动
+    const dPrime = Math.fround(difficulty + Math.fround(delta * Math.fround((10 - difficulty) / 9)));
+    // 均值回归目标是未钳制的 D0(Easy)
+    const target = this.initDifficultyRaw(Rating.Easy);
+    const reverted = Math.fround(Math.fround(this.w[7] * target) + Math.fround((1 - this.w[7]) * dPrime));
     return this.clampDifficulty(reverted);
   }
 
@@ -181,7 +196,7 @@ export class FsrsScheduler {
   nextStability(difficulty: number, stability: number, r: number, rating: number,
                 elapsedDays: number): number {
     let next: number;
-    if (elapsedDays <= 0 && stability < this.initStability(Rating.Good)) {
+    if (elapsedDays <= 0) {
       next = this.shortTermStability(stability, rating);
     } else if (rating === Rating.Again) {
       next = this.stabilityAfterFailure(difficulty, stability, r);
@@ -193,8 +208,15 @@ export class FsrsScheduler {
 
   /** 短期稳定性（同日复习）：S' = S * e^(w17*(G-3+w18)) * S^(-w19) */
   private shortTermStability(stability: number, rating: number): number {
-    const sinc = Math.exp(this.w[17] * (rating - 3 + this.w[18])) * Math.pow(stability, -this.w[19]);
-    return stability * sinc;
+    const rMinus3 = Math.fround(rating - 3);
+    const w18 = this.w[18];
+    const expPart = Math.fround(Math.exp(Math.fround(this.w[17] * Math.fround(rMinus3 + w18))));
+    const powPart = Math.fround(Math.pow(stability, Math.fround(-this.w[19])));
+    const sinc = Math.fround(expPart * powPart);
+    if (rating >= Rating.Good) {
+      return Math.fround(Math.max(stability, Math.fround(stability * sinc)));
+    }
+    return Math.fround(stability * sinc);
   }
 
   /**
@@ -206,26 +228,39 @@ export class FsrsScheduler {
    */
   private stabilityAfterSuccess(difficulty: number, stability: number, r: number,
                                 rating: number): number {
-    const tD = 11 - difficulty;
-    const tS = Math.pow(stability, -this.w[9]);
-    const tR = Math.exp(this.w[10] * (1 - r)) - 1;
-    const h = rating === Rating.Hard ? this.w[15] : 1;
-    const b = rating === Rating.Easy ? this.w[16] : 1;
-    const c = Math.exp(this.w[8]);
-    const alpha = 1 + tD * tS * tR * h * b * c;
-    return stability * alpha;
+    const tD = Math.fround(11 - difficulty);
+    const tS = Math.fround(Math.pow(stability, Math.fround(-this.w[9])));
+    const tR = Math.fround(Math.fround(Math.exp(Math.fround(this.w[10] * Math.fround(1 - r)))) - 1);
+    const h = Math.fround(rating === Rating.Hard ? this.w[15] : 1);
+    const b = Math.fround(rating === Rating.Easy ? this.w[16] : 1);
+    const c = Math.fround(Math.exp(this.w[8]));
+    
+    let tmp = Math.fround(c * h);
+    tmp = Math.fround(tmp * b);
+    tmp = Math.fround(tmp * tR);
+    tmp = Math.fround(tmp * tD);
+    tmp = Math.fround(tmp * tS);
+    
+    const alpha = Math.fround(1 + tmp);
+    return Math.fround(stability * alpha);
   }
 
   /**
    * 遗忘（Again）后的稳定性。
-   * S' = min(w11 * D^(-w12) * ((S+1)^w13 - 1) * e^(w14*(1-R)), S)
-   * min(..., S) 保证失败后稳定性只降不升。
+   * S' = min(w11 * D^(-w12) * ((S+1)^w13 - 1) * e^(w14*(1-R)), S / e^(w17 * w18))
+   * 此处 cap 保证失败后稳定性不仅降，且至少降到一个比例以下。
    */
   private stabilityAfterFailure(difficulty: number, stability: number, r: number): number {
-    const dF = Math.pow(difficulty, -this.w[12]);
-    const sF = Math.pow(stability + 1, this.w[13]) - 1;
-    const rF = Math.exp(this.w[14] * (1 - r));
-    return this.w[11] * dF * sF * rF;
+    const dF = Math.fround(Math.pow(difficulty, Math.fround(-this.w[12])));
+    const sPlus1 = Math.fround(stability + 1);
+    const sF = Math.fround(Math.fround(Math.pow(sPlus1, this.w[13])) - 1);
+    const rF = Math.fround(Math.exp(Math.fround(this.w[14] * Math.fround(1 - r))));
+    let next = Math.fround(this.w[11] * dF);
+    next = Math.fround(next * sF);
+    next = Math.fround(next * rF);
+    const capExp = Math.fround(Math.exp(Math.fround(this.w[17] * this.w[18])));
+    const cap = Math.fround(stability / capExp);
+    return Math.fround(Math.min(next, cap));
   }
 
   // ---------------- 主入口 ----------------
@@ -246,14 +281,23 @@ export class FsrsScheduler {
     if (!state.isInitialized()) {
       const s = this.initStability(rating);
       const d = this.initDifficulty(rating);
-      return new SchedulingInfo(new MemoryState(s, d), this.nextInterval(s, desiredRetention), 0);
+      return new SchedulingInfo(
+        new MemoryState(Math.fround(s), Math.fround(d)),
+        Math.fround(this.nextInterval(s, desiredRetention)),
+        0
+      );
     }
 
     // 分支二：老卡
     const r = this.retrievability(elapsedDays, state.stability);
     const d = this.nextDifficulty(state.difficulty, rating);
     const s = this.nextStability(state.difficulty, state.stability, r, rating, elapsedDays);
-    return new SchedulingInfo(new MemoryState(s, d), this.nextInterval(s, desiredRetention), r);
+    // 使用 Math.fround 对齐官方 fsrs crate (f32) 的存储精度，减少黄金向量比对时的累计误差
+    return new SchedulingInfo(
+      new MemoryState(Math.fround(s), Math.fround(d)),
+      Math.fround(this.nextInterval(s, desiredRetention)),
+      r
+    );
   }
 
   /**

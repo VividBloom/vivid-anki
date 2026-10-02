@@ -43,25 +43,25 @@
 
 两份文档的分工：PRD 回答「做成什么样」，最小文档回答「怎么开工、怎么测、怎么上架」。
 
-## 六、代码
+## 六、测试验证
 
-| 目录 | 内容 |
-|---|---|
-| `anki\docs\FSRS调度器实现/` | FSRS-6 调度器 ArkTS 实现（32 项断言全绿）+ 黄金测试向量生成脚本 |
-| `anki\docs\鸿蒙工程骨架/` | 建表 SQL（10 表 + 10 索引）· 五层目录 · 依赖方向检查脚本 · FSRS 调度器 · ReviewQueue |
+项目包含两套测试系统：
 
-工程骨架可以直接 `git init` 开工，**必须**安装 pre-commit 钩子以确保分层合规：
+1. **Node.js 快速验证**（开发阶段使用）：
+   ```bash
+   # 需先生成黄金向量
+   cd anki/dev-tests/golden_vectors && cargo run --release > vectors.json
+   # 运行 JS 自检
+   cd .. && node fsrs.selftest.js
+   ```
 
-```bash
-# 一键安装 Git Hook
-bash anki/scripts/install_hooks.sh
-```
-
-或者手动挂载：
-```bash
-echo 'python3 anki/scripts/check_deps.py --strict' > .git/hooks/pre-commit
-chmod +x .git/hooks/pre-commit
-```
+2. **鸿蒙原生 Hypium 测试**（真机/模拟器回归）：
+   - **准备**：将 `anki/dev-tests/golden_vectors/vectors.json` 推送到设备的 `filesDir` 目录下。
+     ```bash
+     hdc file send anki/dev-tests/golden_vectors/vectors.json /data/app/el2/100/base/com.example.memo/files/
+     ```
+   - **运行**：在 DevEco Studio 中选择 `ohosTest` 模块，点击 `Run 'All Tests'`。
+   - **内容**：涵盖 A 段 32 项逻辑断言与 B 段 4336 组黄金向量比对。
 
 ---
 

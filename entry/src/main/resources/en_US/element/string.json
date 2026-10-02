@@ -14,15 +14,15 @@
     },
     {
       "name": "perm_internet_reason",
-      "value": "For AI card generation and deck download"
+      "value": "For AI organization and project download"
     },
     {
       "name": "perm_camera_reason",
-      "value": "For creating cards from photos of notes"
+      "value": "For creating study points from photos of notes"
     },
     {
       "name": "perm_microphone_reason",
-      "value": "For recording card pronunciation"
+      "value": "For recording pronunciation of points"
     },
     {
       "name": "perm_reminder_reason",

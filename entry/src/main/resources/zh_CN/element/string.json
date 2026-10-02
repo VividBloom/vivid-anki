@@ -14,15 +14,15 @@
     },
     {
       "name": "perm_internet_reason",
-      "value": "用于 AI 制卡与牌组下载"
+      "value": "用于 AI 自动整理与项目下载"
     },
     {
       "name": "perm_camera_reason",
-      "value": "用于拍照制卡，把书页或笔记变成卡片"
+      "value": "用于拍照，把书页或笔记变成学习要点"
     },
     {
       "name": "perm_microphone_reason",
-      "value": "用于录制卡片发音"
+      "value": "用于录制语音要点"
     },
     {
       "name": "perm_reminder_reason",
