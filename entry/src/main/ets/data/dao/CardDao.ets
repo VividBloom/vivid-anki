@@ -98,6 +98,47 @@ export default class CardDao {
   }
 
   /**
+   * 查找复习候选集（含到期卡与新卡）
+   * 
+   * @param tomorrowTs 次日零点时间戳
+   * @param newLimit   新卡上限（防止一次性拉取过多新卡）
+   */
+  async queryReviewCandidates(store: relationalStore.RdbStore, tomorrowTs: number, newLimit: number): Promise<Result<CardEntity[]>> {
+    try {
+      // 1. 获取到期卡（无上限限制，由 ReviewQueue 内部做 reviewLimit 截断）
+      const duePredicates = new relationalStore.RdbPredicates(CardDao.TABLE_NAME);
+      duePredicates
+        .isNull('deleted_at')
+        .equalTo('suspended', 0)
+        .notEqualTo('state', 'new')
+        .lessThan('due', tomorrowTs)
+        .orderByAsc('due');
+      
+      const dueResultSet = await store.query(duePredicates);
+      const dueCards = this.parseResultSet(dueResultSet);
+      dueResultSet.close();
+
+      // 2. 获取新卡（受 newLimit 约束）
+      const newPredicates = new relationalStore.RdbPredicates(CardDao.TABLE_NAME);
+      newPredicates
+        .isNull('deleted_at')
+        .equalTo('suspended', 0)
+        .equalTo('state', 'new')
+        .orderByAsc('id') // 按创建顺序
+        .limitAs(newLimit);
+      
+      const newResultSet = await store.query(newPredicates);
+      const newCards = this.parseResultSet(newResultSet);
+      newResultSet.close();
+
+      return Result.success(dueCards.concat(newCards));
+    } catch (e) {
+      LogUtil.e(CardDao.TAG, '查询复习候选集失败: ' + JSON.stringify(e));
+      return Result.success([]);
+    }
+  }
+
+  /**
    * 获取指定项目下的所有有效要点
    */
   async queryByDeck(store: relationalStore.RdbStore, deckId: number): Promise<Result<CardEntity[]>> {
