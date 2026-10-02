@@ -99,7 +99,7 @@ struct ReviewPage {
           .padding(16)
         }
 
-        // 卡片区域
+        // 内容展示区域
         Stack() {
           Column() {
             if (!this.isFlipped) {
@@ -163,7 +163,7 @@ struct ReviewPage {
           })
           .transition({ type: TransitionType.Insert, translate: { y: 100 } })
         } else {
-          Text('点击卡片查看答案')
+          Text('点击屏幕查看答案')
             .fontSize(14)
             .fontColor(Color.Gray)
             .margin({ bottom: 40 })
