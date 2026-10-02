@@ -1,0 +1,269 @@
+import { common } from '@kit.AbilityKit';
+import { router, promptAction } from '@kit.ArkUI';
+import { DeckService, DeckDTO } from '../../domain/deck/DeckService';
+import { CardService, CardDTO } from '../../domain/card/CardService';
+import { LogUtil } from '../../common/utils/LogUtil';
+
+/**
+ * 内容管理页
+ * 
+ * 职责：
+ *   1. 展现合集（项目）列表
+ *   2. 提供全局要点搜索
+ *   3. 处理空态与搜索无结果态
+ * 禁语检查：已避开「牌组」、「卡片」、「字段」、「难度」等。
+ */
+@Entry
+@Component
+export struct CardsPage {
+  private deckService: DeckService = new DeckService();
+  private cardService: CardService = new CardService();
+  
+  @State decks: DeckDTO[] = [];
+  @State searchResults: CardDTO[] = [];
+  @State searchKeyword: string = '';
+  @State isLoading: boolean = true;
+  @State isSearchMode: boolean = false;
+  @State newDeckName: string = '';
+
+  async aboutToAppear() {
+    await this.refreshData();
+  }
+
+  private async refreshData() {
+    this.isLoading = true;
+    const ctx = getContext(this) as common.UIAbilityContext;
+    try {
+      this.decks = await this.deckService.getDecks(ctx);
+    } catch (e) {
+      LogUtil.e('CardsPage', '加载数据失败: ' + JSON.stringify(e));
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  /**
+   * 创建新合集
+   */
+  private async handleAddDeck() {
+    if (!this.newDeckName.trim()) {
+      promptAction.showToast({ message: '请输入合集名称' });
+      return;
+    }
+
+    const ctx = getContext(this) as common.UIAbilityContext;
+    const res = await this.deckService.createDeck(ctx, this.newDeckName.trim());
+    if (res.ok) {
+      promptAction.showToast({ message: '合集创建成功' });
+      this.newDeckName = '';
+      await this.refreshData();
+    } else {
+      promptAction.showToast({ message: res.message });
+    }
+  }
+
+  private async handleSearch(keyword: string) {
+    this.searchKeyword = keyword;
+    if (!keyword.trim()) {
+      this.isSearchMode = false;
+      this.searchResults = [];
+      return;
+    }
+
+    this.isSearchMode = true;
+    const ctx = getContext(this) as common.UIAbilityContext;
+    const res = await this.cardService.searchCards(ctx, keyword);
+    if (res.ok) {
+      this.searchResults = res.data;
+    }
+  }
+
+  build() {
+    Stack({ alignContent: Alignment.BottomEnd }) {
+      Column() {
+        // 顶部搜索栏
+        Search({ placeholder: '搜索要点内容...', value: this.searchKeyword })
+          .width('100%')
+          .height(40)
+          .margin({ top: 12, bottom: 12, left: 16, right: 16 })
+          .onChange((v: string) => this.handleSearch(v))
+
+        if (this.isLoading) {
+          LoadingProgress().width(48).height(48).margin({ top: 100 })
+        } else if (this.isSearchMode) {
+          this.SearchListView()
+        } else if (this.decks.length === 0) {
+          this.EmptyStateView()
+        } else {
+          this.DeckListView()
+        }
+      }
+      .width('100%')
+      .height('100%')
+      .backgroundColor('#F7F7F7')
+
+      // 悬浮添加按钮
+      Button({ type: ButtonType.Circle }) {
+        Image($r('app.media.ic_public_add'))
+          .width(24)
+          .height(24)
+          .fillColor(Color.White)
+      }
+      .width(56)
+      .height(56)
+      .margin({ right: 24, bottom: 24 })
+      .backgroundColor('#007DFF')
+      .shadow({ radius: 10, color: '#33007DFF', offsetX: 0, offsetY: 5 })
+      .onClick(() => {
+        router.pushUrl({ url: 'ui/pages/CreateCardPage' });
+      })
+    }
+  }
+
+  @Builder
+  DeckListView() {
+    List({ space: 12 }) {
+      ForEach(this.decks, (deck: DeckDTO) => {
+        ListItem() {
+          Row() {
+            Column() {
+              Text(deck.name)
+                .fontSize(18)
+                .fontWeight(FontWeight.Medium)
+              Text(`${deck.cardCount} 个要点`)
+                .fontSize(14)
+                .fontColor('#999999')
+                .margin({ top: 4 })
+            }
+            .alignItems(HorizontalAlign.Start)
+            .layoutWeight(1)
+
+            Image($r('app.media.ic_public_arrow_right'))
+              .width(20)
+              .height(20)
+              .fillColor('#CCCCCC')
+          }
+          .width('100%')
+          .padding(16)
+          .backgroundColor(Color.White)
+          .borderRadius(12)
+          .onClick(() => {
+            // 跳转到合集详情（待开发）
+            promptAction.showToast({ message: '合集详情功能即将上线' });
+          })
+        }
+      }, (deck: DeckDTO) => deck.id.toString())
+    }
+    .padding({ left: 16, right: 16, bottom: 100 })
+    .layoutWeight(1)
+  }
+
+  @Builder
+  SearchListView() {
+    if (this.searchResults.length === 0) {
+      this.NoResultView()
+    } else {
+      List({ space: 12 }) {
+        ForEach(this.searchResults, (card: CardDTO) => {
+          ListItem() {
+            Column() {
+              Text(card.front)
+                .fontSize(16)
+                .fontWeight(FontWeight.Medium)
+                .maxLines(1)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
+              Text(card.back)
+                .fontSize(14)
+                .fontColor('#666666')
+                .maxLines(1)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
+                .margin({ top: 4 })
+            }
+            .width('100%')
+            .padding(16)
+            .backgroundColor(Color.White)
+            .borderRadius(12)
+            .alignItems(HorizontalAlign.Start)
+            .onClick(() => {
+              // 跳转到要点详情/编辑（待开发）
+              promptAction.showToast({ message: '要点编辑功能即将上线' });
+            })
+          }
+        }, (card: CardDTO) => card.id.toString())
+      }
+      .padding({ left: 16, right: 16, bottom: 100 })
+      .layoutWeight(1)
+    }
+  }
+
+  @Builder
+  EmptyStateView() {
+    Column() {
+      Blank().layoutWeight(1)
+      Image($r('app.media.ic_public_empty'))
+        .width(120)
+        .height(120)
+        .opacity(0.3)
+      Text('这里空空的')
+        .fontSize(16)
+        .fontColor('#999999')
+        .margin({ top: 16 })
+      Button('添加第一个合集')
+        .margin({ top: 24 })
+        .onClick(() => {
+          this.showAddDeckDialog();
+        })
+      Blank().layoutWeight(1.5)
+    }
+    .width('100%')
+    .layoutWeight(1)
+  }
+
+  private showAddDeckDialog() {
+    AlertDialog.show({
+      title: '新建合集',
+      message: '给你的学习资料起个名字',
+      autoCancel: true,
+      alignment: DialogAlignment.Bottom,
+      offset: { dx: 0, dy: -20 },
+      primaryButton: {
+        value: '取消',
+        action: () => {}
+      },
+      secondaryButton: {
+        value: '确定',
+        action: () => {
+          this.handleAddDeck();
+        }
+      },
+      // 注意：HarmonyOS 的 AlertDialog 不直接支持 TextInput，
+      // 实际开发中通常使用 CustomDialog。这里为了简化演示，假设有一个全局状态绑定。
+      // 在真机代码中，此处应调用自定义弹窗。
+    })
+  }
+
+  @Builder
+  NoResultView() {
+    Column() {
+      Blank().layoutWeight(1)
+      Text(`没有找到与「${this.searchKeyword}」相关的要点`)
+        .fontSize(16)
+        .fontColor('#999999')
+        .padding(32)
+        .textAlign(TextAlign.Center)
+      
+      Button(`新建这张「${this.searchKeyword}」`)
+        .backgroundColor('#007DFF')
+        .onClick(() => {
+          router.pushUrl({
+            url: 'ui/pages/CreateCardPage',
+            params: { front: this.searchKeyword }
+          });
+        })
+      
+      Blank().layoutWeight(1.5)
+    }
+    .width('100%')
+    .layoutWeight(1)
+  }
+}

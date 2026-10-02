@@ -9,6 +9,17 @@ import { TimeUtil } from '../../common/utils/TimeUtil';
 import { ParsedItem } from './CardParseService';
 
 /**
+ * 要点 DTO
+ */
+export interface CardDTO {
+  id: number;
+  front: string;
+  back: string;
+  cardType: string;
+  extra?: string;
+}
+
+/**
  * 记忆要点业务服务
  * 
  * 职责：
@@ -119,6 +130,24 @@ export class CardService {
 
       return Result.success(successCount);
     });
+  }
+
+  /**
+   * 搜索要点
+   */
+  async searchCards(ctx: common.UIAbilityContext, keyword: string): Promise<Result<CardDTO[]>> {
+    const store = await DbHelper.getInstance(ctx);
+    const res = await this.cardDao.search(store, keyword);
+    if (res.ok) {
+      return Result.success(res.data.map(c => ({
+        id: c.id!,
+        front: c.front,
+        back: c.back,
+        cardType: c.cardType,
+        extra: c.extra
+      })));
+    }
+    return Result.fail(res.message);
   }
 
   /**

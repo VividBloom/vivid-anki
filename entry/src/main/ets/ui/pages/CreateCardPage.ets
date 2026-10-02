@@ -22,6 +22,13 @@ struct CreateCardPage {
   @State isReverse: boolean = false;
   @State isCloze: boolean = false;
 
+  aboutToAppear() {
+    const params = router.getParams() as Record<string, Object>;
+    if (params && params.front) {
+      this.frontText = params.front as string;
+    }
+  }
+
   /**
    * 保存操作
    * 实现要求：点击保存即完成，不强制预建项目

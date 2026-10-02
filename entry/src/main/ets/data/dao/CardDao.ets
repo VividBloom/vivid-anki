@@ -315,6 +315,31 @@ export default class CardDao {
     }
   }
 
+  /**
+   * 搜索要点
+   */
+  async search(store: relationalStore.RdbStore, keyword: string): Promise<Result<CardEntity[]>> {
+    try {
+      const predicates = new relationalStore.RdbPredicates(CardDao.TABLE_NAME);
+      predicates
+        .isNull('deleted_at')
+        .beginWrap()
+        .like('front', `%${keyword}%`)
+        .or()
+        .like('back', `%${keyword}%`)
+        .endWrap()
+        .orderByDesc('updated_at');
+
+      const resultSet = await store.query(predicates);
+      const cards = this.parseResultSet(resultSet);
+      resultSet.close();
+      return Result.success(cards);
+    } catch (e) {
+      LogUtil.e(CardDao.TAG, '搜索失败: ' + JSON.stringify(e));
+      return Result.success([]);
+    }
+  }
+
   private parseQueueCard(resultSet: relationalStore.ResultSet): QueueCard {
     const state = resultSet.getString(resultSet.getColumnIndex('state'));
     return {
