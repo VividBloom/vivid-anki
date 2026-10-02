@@ -2,6 +2,7 @@
   "src": [
     "pages/Index",
     "ui/pages/ReviewPage",
-    "ui/pages/DonePage"
+    "ui/pages/DonePage",
+    "ui/pages/OnboardPage"
   ]
 }
