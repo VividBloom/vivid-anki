@@ -5,6 +5,7 @@ import CardDao, { CardEntity } from '../../data/dao/CardDao';
 import DeckDao, { DeckEntity } from '../../data/dao/DeckDao';
 import { Result, ErrorCode } from '../../common/utils/Result';
 import { TimeUtil } from '../../common/utils/TimeUtil';
+import { ParsedItem } from './CardParseService';
 
 /**
  * 记忆要点业务服务
@@ -62,6 +63,50 @@ export class CardService {
       await this.deckDao.recalcCounts(store, deckId, TimeUtil.now());
 
       return cardResult;
+    });
+  }
+
+  /**
+   * 批量创建要点
+   * 
+   * @param ctx UI 上下文
+   * @param items 待解析出的要点列表
+   * @param deckId 目标项目ID
+   */
+  async createCards(ctx: common.UIAbilityContext, items: ParsedItem[], deckId?: number): Promise<Result<number>> {
+    const store = await DbHelper.getInstance(ctx);
+    
+    return await DbHelper.inTransaction(store, async (): Promise<Result<number>> => {
+      let targetDeckId = deckId;
+      
+      // 1. 确保项目存在
+      if (!targetDeckId) {
+        const defaultDeckResult = await this.ensureDefaultDeck(store);
+        if (!defaultDeckResult.ok) throw new Error('无法获取或创建默认合集');
+        targetDeckId = defaultDeckResult.data;
+      }
+
+      const now = TimeUtil.now();
+      let successCount = 0;
+
+      // 2. 批量插入
+      for (const item of items) {
+        if (!item.front.trim()) continue;
+        
+        const res = await this.cardDao.insert(store, {
+          deckId: targetDeckId,
+          front: item.front,
+          back: item.back,
+          cardType: 'basic',
+          due: now
+        });
+        if (res.ok) successCount++;
+      }
+
+      // 3. 统一重算计数
+      await this.deckDao.recalcCounts(store, targetDeckId, now);
+
+      return Result.success(successCount);
     });
   }
 
