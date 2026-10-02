@@ -2,6 +2,8 @@ import { common } from '@kit.AbilityKit';
 import { router, promptAction } from '@kit.ArkUI';
 import { DeckService, DeckDTO } from '../../domain/deck/DeckService';
 import { CardService, CardDTO } from '../../domain/card/CardService';
+import { StateView } from '../components/StateView';
+import { SkeletonList } from '../components/Skeleton';
 import { LogUtil } from '../../common/utils/LogUtil';
 
 /**
@@ -23,6 +25,8 @@ export struct CardsPage {
   @State searchResults: CardDTO[] = [];
   @State searchKeyword: string = '';
   @State isLoading: boolean = true;
+  @State isError: boolean = false;
+  @State errorMessage: string = '';
   @State isSearchMode: boolean = false;
   @State newDeckName: string = '';
 
@@ -32,11 +36,14 @@ export struct CardsPage {
 
   private async refreshData() {
     this.isLoading = true;
+    this.isError = false;
     const ctx = getContext(this) as common.UIAbilityContext;
     try {
       this.decks = await this.deckService.getDecks(ctx);
     } catch (e) {
       LogUtil.e('CardsPage', '加载数据失败: ' + JSON.stringify(e));
+      this.isError = true;
+      this.errorMessage = '无法获取合集列表';
     } finally {
       this.isLoading = false;
     }
@@ -89,7 +96,14 @@ export struct CardsPage {
           .onChange((v: string) => this.handleSearch(v))
 
         if (this.isLoading) {
-          LoadingProgress().width(48).height(48).margin({ top: 100 })
+          SkeletonList({ count: 8 }).margin({ top: 12 })
+        } else if (this.isError) {
+          StateView({
+            type: 'error',
+            title: '加载失败',
+            message: this.errorMessage,
+            onAction: () => this.refreshData()
+          })
         } else if (this.isSearchMode) {
           this.SearchListView()
         } else if (this.decks.length === 0) {
@@ -198,25 +212,13 @@ export struct CardsPage {
 
   @Builder
   EmptyStateView() {
-    Column() {
-      Blank().layoutWeight(1)
-      Image($r('app.media.ic_public_empty'))
-        .width(120)
-        .height(120)
-        .opacity(0.3)
-      Text('这里空空的')
-        .fontSize(16)
-        .fontColor('#999999')
-        .margin({ top: 16 })
-      Button('添加第一个合集')
-        .margin({ top: 24 })
-        .onClick(() => {
-          this.showAddDeckDialog();
-        })
-      Blank().layoutWeight(1.5)
-    }
-    .width('100%')
-    .layoutWeight(1)
+    StateView({
+      type: 'empty',
+      title: '还没有合集',
+      message: '给你的学习资料起个名字，开始记录吧',
+      actionLabel: '添加第一个合集',
+      onAction: () => this.showAddDeckDialog()
+    })
   }
 
   private showAddDeckDialog() {
@@ -244,26 +246,17 @@ export struct CardsPage {
 
   @Builder
   NoResultView() {
-    Column() {
-      Blank().layoutWeight(1)
-      Text(`没有找到与「${this.searchKeyword}」相关的要点`)
-        .fontSize(16)
-        .fontColor('#999999')
-        .padding(32)
-        .textAlign(TextAlign.Center)
-      
-      Button(`新建这张「${this.searchKeyword}」`)
-        .backgroundColor('#007DFF')
-        .onClick(() => {
-          router.pushUrl({
-            url: 'ui/pages/CreateCardPage',
-            params: { front: this.searchKeyword }
-          });
-        })
-      
-      Blank().layoutWeight(1.5)
-    }
-    .width('100%')
-    .layoutWeight(1)
+    StateView({
+      type: 'empty',
+      title: '没有找到结果',
+      message: `没有找到与「${this.searchKeyword}」相关的要点`,
+      actionLabel: `新建这张「${this.searchKeyword}」`,
+      onAction: () => {
+        router.pushUrl({
+          url: 'ui/pages/CreateCardPage',
+          params: { front: this.searchKeyword }
+        });
+      }
+    })
   }
 }

@@ -3,6 +3,8 @@ import { router, promptAction } from '@kit.ArkUI';
 import { ReviewService, HomeData } from '../../domain/review/ReviewService';
 import { ResumeService } from '../../domain/session/ResumeService';
 import { ReturnService } from '../../domain/review/ReturnService';
+import { StateView } from '../components/StateView';
+import { SkeletonCard, SkeletonText } from '../components/Skeleton';
 import { LogUtil } from '../../common/utils/LogUtil';
 
 /**
@@ -30,6 +32,8 @@ export struct TodayPage {
   };
   
   @State isLoading: boolean = true;
+  @State isError: boolean = false;
+  @State errorMessage: string = '';
 
   async aboutToAppear(): Promise<void> {
     const ctx = getContext(this) as common.UIAbilityContext;
@@ -38,6 +42,7 @@ export struct TodayPage {
 
   private async refreshData(ctx: common.UIAbilityContext) {
     this.isLoading = true;
+    this.isError = false;
     try {
       // 1. 优先检测是否需要进入回归引导
       const returnStatus = await this.returnService.checkReturnMode(ctx);
@@ -55,6 +60,8 @@ export struct TodayPage {
       }
     } catch (e) {
       LogUtil.e('TodayPage', '刷新数据失败: ' + JSON.stringify(e));
+      this.isError = true;
+      this.errorMessage = '无法获取今日进度';
     } finally {
       this.isLoading = false;
     }
@@ -105,7 +112,17 @@ export struct TodayPage {
           .padding({ left: 20, right: 20, top: 20, bottom: 20 })
 
           if (this.isLoading) {
-            LoadingProgress().width(48).height(48).margin({ top: 100 })
+            this.SkeletonView()
+          } else if (this.isError) {
+            StateView({
+              type: 'error',
+              title: '加载失败',
+              message: this.errorMessage,
+              onAction: () => {
+                const ctx = getContext(this) as common.UIAbilityContext;
+                this.refreshData(ctx);
+              }
+            })
           } else {
             // 主卡片区域 (Hero Card)
             this.HeroCard()
@@ -141,6 +158,18 @@ export struct TodayPage {
     }
     .width('100%')
     .height('100%')
+  }
+
+  @Builder
+  SkeletonView() {
+    Column() {
+      SkeletonCard({ height: 260 })
+      SkeletonCard({ height: 80 })
+      SkeletonCard({ height: 120 })
+    }
+    .width('100%')
+    .alignItems(HorizontalAlign.Center)
+    .margin({ top: 20 })
   }
 
   @Builder

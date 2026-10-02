@@ -8,6 +8,8 @@ import { Rating } from '../../domain/scheduler/FsrsScheduler';
 import { RatingBar } from '../components/RatingBar';
 import { CardTypeService, RenderedContent } from '../../domain/card/CardTypeService';
 import { MediaService } from '../../domain/card/MediaService';
+import { StateView } from '../components/StateView';
+import { SkeletonCard, SkeletonText } from '../components/Skeleton';
 import { LogUtil } from '../../common/utils/LogUtil';
 import { media } from '@kit.MediaKit';
 
@@ -33,6 +35,8 @@ struct ReviewPage {
   @State currentCard: ReviewCard | null = null;
   @State isFlipped: boolean = false;
   @State isLoading: boolean = true;
+  @State isError: boolean = false;
+  @State errorMessage: string = '';
   @State startTime: number = 0;
   @State isLeftHanded: boolean = false;
   @State sessionId: string = '';
@@ -49,6 +53,8 @@ struct ReviewPage {
     const ctx = getContext(this) as common.UIAbilityContext;
     const params = router.getParams() as Record<string, Object>;
     
+    this.isLoading = true;
+    this.isError = false;
     try {
       // 加载用户偏好
       const settings = await this.reviewService.getSettings(ctx);
@@ -73,12 +79,16 @@ struct ReviewPage {
 
       if (this.queue.length > 0 && this.currentIndex < this.queue.length) {
         await this.loadCard(this.queue[this.currentIndex].id);
+      } else if (this.queue.length === 0) {
+        this.isError = true;
+        this.errorMessage = '今日已无待学习要点';
       } else {
         router.back();
       }
     } catch (e) {
       LogUtil.e('ReviewPage', '初始化失败: ' + JSON.stringify(e));
-      router.back();
+      this.isError = true;
+      this.errorMessage = '复习队列加载失败';
     } finally {
       this.isLoading = false;
     }
@@ -151,6 +161,18 @@ struct ReviewPage {
           // 可以做大图预览
         })
     }
+  }
+
+  @Builder
+  SkeletonView() {
+    Column() {
+      SkeletonText({ width: '40%', height: 16 }).margin({ bottom: 40 })
+      SkeletonCard({ height: 400 })
+      SkeletonText({ width: '60%', height: 20 }).margin({ top: 40 })
+    }
+    .width('100%')
+    .alignItems(HorizontalAlign.Center)
+    .padding(24)
   }
 
   async loadCard(cardId: number) {
@@ -242,7 +264,15 @@ struct ReviewPage {
   build() {
     Column() {
       if (this.isLoading) {
-        LoadingProgress().width(48).height(48)
+        this.SkeletonView()
+      } else if (this.isError) {
+        StateView({
+          type: this.errorMessage.includes('无') ? 'empty' : 'error',
+          title: this.isError ? '提示' : '出错了',
+          message: this.errorMessage,
+          actionLabel: '返回首页',
+          onAction: () => router.back()
+        })
       } else if (this.currentCard) {
         // 顶部进度条
         Column() {

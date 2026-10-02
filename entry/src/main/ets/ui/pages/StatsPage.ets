@@ -1,6 +1,8 @@
 import { common } from '@kit.AbilityKit';
 import { router } from '@kit.ArkUI';
 import { StatsService, StatsDTO } from '../../domain/stats/StatsService';
+import { StateView } from '../components/StateView';
+import { SkeletonCard } from '../components/Skeleton';
 import { LogUtil } from '../../common/utils/LogUtil';
 
 /**
@@ -24,6 +26,8 @@ struct StatsPage {
   };
   
   @State isLoading: boolean = true;
+  @State isError: boolean = false;
+  @State errorMessage: string = '';
 
   async aboutToAppear(): Promise<void> {
     const ctx = getContext(this) as common.UIAbilityContext;
@@ -32,13 +36,27 @@ struct StatsPage {
 
   private async refreshData(ctx: common.UIAbilityContext) {
     this.isLoading = true;
+    this.isError = false;
     try {
       this.stats = await this.statsService.getStats(ctx);
     } catch (e) {
       LogUtil.e('StatsPage', '刷新统计数据失败: ' + JSON.stringify(e));
+      this.isError = true;
+      this.errorMessage = '无法获取学习成就数据';
     } finally {
       this.isLoading = false;
     }
+  }
+
+  @Builder
+  SkeletonView() {
+    Column({ space: 16 }) {
+      SkeletonCard({ height: 160 })
+      SkeletonCard({ height: 200 })
+      SkeletonCard({ height: 160 })
+      SkeletonCard({ height: 160 })
+    }
+    .padding(16)
   }
 
   build() {
@@ -63,7 +81,17 @@ struct StatsPage {
       .backgroundColor(Color.White)
 
       if (this.isLoading) {
-        LoadingProgress().width(48).height(48).margin({ top: 100 })
+        this.SkeletonView()
+      } else if (this.isError) {
+        StateView({
+          type: 'error',
+          title: '加载失败',
+          message: this.errorMessage,
+          onAction: () => {
+            const ctx = getContext(this) as common.UIAbilityContext;
+            this.refreshData(ctx);
+          }
+        })
       } else {
         Scroll() {
           Column({ space: 16 }) {
