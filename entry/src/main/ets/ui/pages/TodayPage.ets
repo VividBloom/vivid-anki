@@ -76,39 +76,59 @@ export struct TodayPage {
   }
 
   build() {
-    Scroll() {
-      Column() {
-        // 顶部标题
-        Row() {
-          Text('瞄一眼')
-            .fontSize(24)
-            .fontWeight(FontWeight.Bold)
-          Blank()
-          Image($r('app.media.ic_public_settings'))
-            .width(24)
-            .height(24)
+    Stack({ alignContent: Alignment.BottomEnd }) {
+      Scroll() {
+        Column() {
+          // 顶部标题
+          Row() {
+            Text('瞄一眼')
+              .fontSize(24)
+              .fontWeight(FontWeight.Bold)
+            Blank()
+            Image($r('app.media.ic_public_settings'))
+              .width(24)
+              .height(24)
+          }
+          .width('100%')
+          .padding({ left: 20, right: 20, top: 20, bottom: 20 })
+
+          if (this.isLoading) {
+            LoadingProgress().width(48).height(48).margin({ top: 100 })
+          } else {
+            // 主卡片区域 (Hero Card)
+            this.HeroCard()
+
+            // 统计数据 (Streak & Heatmap)
+            this.StatsSection()
+
+            // 未来预告 (Forecast)
+            this.ForecastSection()
+          }
         }
         .width('100%')
-        .padding({ left: 20, right: 20, top: 20, bottom: 20 })
-
-        if (this.isLoading) {
-          LoadingProgress().width(48).height(48).margin({ top: 100 })
-        } else {
-          // 主卡片区域 (Hero Card)
-          this.HeroCard()
-
-          // 统计数据 (Streak & Heatmap)
-          this.StatsSection()
-
-          // 未来预告 (Forecast)
-          this.ForecastSection()
-        }
+        .alignItems(HorizontalAlign.Center)
       }
-      .width('100%')
-      .alignItems(HorizontalAlign.Center)
+      .height('100%')
+      .backgroundColor('#F7F7F7')
+
+      // 悬浮添加按钮 (快速制卡)
+      Button({ type: ButtonType.Circle }) {
+        Image($r('app.media.ic_public_add'))
+          .width(24)
+          .height(24)
+          .fillColor(Color.White)
+      }
+      .width(56)
+      .height(56)
+      .margin({ right: 24, bottom: 24 })
+      .backgroundColor('#007DFF')
+      .shadow({ radius: 10, color: '#33007DFF', offsetX: 0, offsetY: 5 })
+      .onClick(() => {
+        router.pushUrl({ url: 'ui/pages/CreateCardPage' });
+      })
     }
+    .width('100%')
     .height('100%')
-    .backgroundColor('#F7F7F7')
   }
 
   @Builder

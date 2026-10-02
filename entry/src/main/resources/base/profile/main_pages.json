@@ -3,6 +3,7 @@
     "pages/Index",
     "ui/pages/ReviewPage",
     "ui/pages/DonePage",
-    "ui/pages/OnboardPage"
+    "ui/pages/OnboardPage",
+    "ui/pages/CreateCardPage"
   ]
 }
