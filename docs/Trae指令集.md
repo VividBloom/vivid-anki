@@ -491,7 +491,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：核心页面，整个产品的中心
 

@@ -137,7 +137,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：把 dev-tests 下的 Node 测试改写为鸿蒙 Hypium 测试，使其可在真机 / 模拟器运行
 
@@ -172,7 +172,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：卡片表的数据访问层，后续一切功能的基础
 
@@ -212,7 +212,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：牌组表数据访问层，含冗余字段维护
 
@@ -248,7 +248,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：复习日志访问层，FSRS 参数训练的数据来源
 
@@ -284,7 +284,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：复习会话访问层，支撑中断恢复与多端接续
 
@@ -319,7 +319,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：设置与每日统计访问层
 
@@ -356,7 +356,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：补齐剩余四张表的数据访问层
 
@@ -395,7 +395,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：保证「升级不丢数据」这条红线
 
@@ -432,7 +432,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：deck 表新增 deleted_at 后，所有列表查询必须过滤
 
@@ -466,7 +466,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：把 pages/Index.ets 的占位内容替换为真实首页入口
 
@@ -506,7 +506,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：核心页面，整个产品的中心
 
@@ -547,7 +547,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：把复习页与调度器、数据库打通
 
@@ -583,7 +583,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：单手可用性
 
@@ -617,7 +617,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：确保大数据量不卡
 
@@ -652,7 +652,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：复习完成的收尾页
 
@@ -687,7 +687,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：中途退出不丢进度
 
@@ -724,7 +724,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：评分错了能反悔
 
@@ -761,7 +761,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：首页正式版
 
@@ -797,7 +797,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：M2 出口检查
 
@@ -833,7 +833,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：新用户前 30 秒的体验，决定留存
 
@@ -870,7 +870,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：确保引导不拖沓
 
@@ -905,7 +905,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：中途退出不用重来
 
@@ -939,7 +939,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：制卡成本决定留存
 
@@ -974,7 +974,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：批量制卡能力
 
@@ -1008,7 +1008,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：AI 制卡的质量闸门
 
@@ -1044,7 +1044,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：AI 制卡及其失败处理
 
@@ -1081,7 +1081,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：基础 / Cloze / 双向
 
@@ -1114,7 +1114,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：图片与音频
 
@@ -1151,7 +1151,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：内容管理入口
 
@@ -1185,7 +1185,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：新手版统计，克制
 
@@ -1221,7 +1221,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：连续天数正确性
 
@@ -1255,7 +1255,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：断卡回来不惩罚
 
@@ -1291,7 +1291,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：温和的一次性提醒
 
@@ -1329,7 +1329,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：克制的设置
 
@@ -1364,7 +1364,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：每个页面的空 / 加载中 / 失败 / 无网
 
@@ -1399,7 +1399,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：「30 天可恢复」的产品层出口
 
@@ -1471,7 +1471,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：冷启动引流口
 
@@ -1505,7 +1505,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：防止一次性淹没用户
 
@@ -1539,7 +1539,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：进度可见、失败可解释
 
@@ -1574,7 +1574,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：数据可迁移是信任资产
 
@@ -1609,7 +1609,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：升级不丢数据
 
@@ -1642,7 +1642,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：鸿蒙差异化杀手锏
 
@@ -1676,7 +1676,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：用户可见的数据出口
 
@@ -1711,7 +1711,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：数据驱动的前提
 
@@ -1745,7 +1745,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：确保埋点能回答业务问题
 
@@ -1778,7 +1778,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：崩溃率 ≤0.1%
 
@@ -1811,7 +1811,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：回归验证
 
@@ -1844,7 +1844,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：无障碍
 
@@ -1877,7 +1877,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：一次开发多端部署
 
@@ -1912,7 +1912,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：上架前自检
 
@@ -1945,7 +1945,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：图标与截图
 
@@ -1980,7 +1980,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：冷启动内容
 
@@ -2015,7 +2015,7 @@ entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索�
 entry/src/main/ets/domain/scheduler/ReviewQueue.ets（队列+上限+回归分批，纯函数）、
 entry/src/main/ets/domain/deck/DeckLifecycleService.ets（软删/恢复/清理）、
 entry/src/main/ets/data/db/ 下的 DbHelper.ets 与 Schema.ets（10 表 10 索引，已建好）。
-数据表定义见 MemoApp/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
+数据表定义见 /anki/docs/V1__init.sql（与 Schema.ets 逐字段一致，改一处要同步另一处）。
 
 任务：备案与类目
 

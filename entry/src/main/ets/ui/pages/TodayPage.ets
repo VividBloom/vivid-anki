@@ -1,4 +1,5 @@
 import { common } from '@kit.AbilityKit';
+import { router } from '@kit.ArkUI';
 import { ReviewService } from '../../domain/review/ReviewService';
 import { QueueResult } from '../../domain/scheduler/ReviewQueue';
 
@@ -109,7 +110,12 @@ export struct TodayPage {
               .margin({ top: 60 })
               .backgroundColor(Color.Blue)
               .onClick(() => {
-                // TODO: 路由跳转至复习页
+                router.pushUrl({
+                  url: 'ui/pages/ReviewPage',
+                  params: {
+                    queue: this.summary.cards
+                  }
+                });
               })
           }
           .justifyContent(FlexAlign.Center)
