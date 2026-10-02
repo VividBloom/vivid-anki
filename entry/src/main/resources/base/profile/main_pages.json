@@ -8,6 +8,8 @@
     "ui/pages/CardsPage",
     "ui/pages/StatsPage",
     "ui/pages/BackPage",
-    "ui/pages/ReminderPage"
+    "ui/pages/ReminderPage",
+    "ui/pages/SettingsPage",
+    "ui/pages/AboutPage"
   ]
 }

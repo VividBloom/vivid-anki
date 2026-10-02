@@ -97,6 +97,9 @@ export struct TodayPage {
             Image($r('app.media.ic_public_settings'))
               .width(24)
               .height(24)
+              .onClick(() => {
+                router.pushUrl({ url: 'ui/pages/SettingsPage' });
+              })
           }
           .width('100%')
           .padding({ left: 20, right: 20, top: 20, bottom: 20 })
