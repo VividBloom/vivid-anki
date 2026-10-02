@@ -37,6 +37,16 @@ export interface CompletionSummary {
 }
 
 /**
+ * 首页展示所需的数据汇总
+ */
+export interface HomeData {
+  summary: QueueResult;
+  streakDays: number;
+  forecast: number[]; // 未来 7 天每日预计复习数
+  todayDone: number;  // 今日已完成数
+}
+
+/**
  * 复习业务服务
  * 
  * 职责：
@@ -249,6 +259,50 @@ export class ReviewService {
     } catch (e) {
       LogUtil.e(ReviewService.TAG, '获取收尾摘要失败: ' + JSON.stringify(e));
       return { todayCount: 0, streakDays: 0, tomorrowCount: 0 };
+    }
+  }
+
+  /**
+   * 获取首页完整数据
+   */
+  async getHomeData(ctx: common.UIAbilityContext): Promise<HomeData> {
+    try {
+      const store = await DbHelper.getInstance(ctx);
+      const statsDao = new DailyStatsDao();
+      const cardDao = new CardDao();
+
+      // 1. 获取今日摘要
+      const summary = await this.getTodaySummary(ctx);
+
+      // 2. 获取连续天数与今日已学
+      const completion = await this.getCompletionSummary(ctx);
+
+      // 3. 获取未来 7 天预测
+      const forecast: number[] = [];
+      const oneDayMs = 24 * 60 * 60 * 1000;
+      let startTs = TimeUtil.startOfTomorrow();
+      
+      for (let i = 0; i < 7; i++) {
+        const endTs = startTs + oneDayMs;
+        const countResult = await cardDao.countDueInRange(store, startTs, endTs);
+        forecast.push(countResult.ok ? countResult.data : 0);
+        startTs = endTs;
+      }
+
+      return {
+        summary,
+        streakDays: completion.streakDays,
+        forecast,
+        todayDone: completion.todayCount
+      };
+    } catch (e) {
+      LogUtil.e(ReviewService.TAG, '获取首页数据失败: ' + JSON.stringify(e));
+      return {
+        summary: this.emptyResult(),
+        streakDays: 0,
+        forecast: [0, 0, 0, 0, 0, 0, 0],
+        todayDone: 0
+      };
     }
   }
 
