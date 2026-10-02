@@ -14,6 +14,7 @@ import { relationalStore } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
 import { DbHelper } from '../../data/db/DbHelper';
 import { DeckLifecycleService, PurgeResult } from '../deck/DeckLifecycleService';
+import { ReminderService } from '../reminder/ReminderService';
 import { LogUtil } from '../../common/utils/LogUtil';
 
 export class StartupTasks {
@@ -27,13 +28,11 @@ export class StartupTasks {
    */
   static async runAll(ctx: common.UIAbilityContext): Promise<void> {
     await StartupTasks.purgeRecycleBin(ctx);
+    await StartupTasks.syncReminders(ctx);
   }
 
   /**
    * 清理回收站中超过 30 天的牌组与卡片。
-   *
-   * 顺序由 DeckLifecycleService.purgeExpired 内部保证：
-   * 先清理过期卡片，再清理名下无卡片的过期牌组。
    */
   private static async purgeRecycleBin(ctx: common.UIAbilityContext): Promise<void> {
     try {
@@ -47,6 +46,18 @@ export class StartupTasks {
     } catch (e) {
       // 清理失败不阻断启动：下次启动会重试。
       LogUtil.w('StartupTasks', '回收站清理失败，下次启动重试: ' + JSON.stringify(e as object));
+    }
+  }
+
+  /**
+   * 同步提醒设置到系统代理
+   */
+  private static async syncReminders(ctx: common.UIAbilityContext): Promise<void> {
+    try {
+      const reminderSvc = new ReminderService();
+      await reminderSvc.applyReminder(ctx);
+    } catch (e) {
+      LogUtil.w('StartupTasks', '同步提醒失败: ' + JSON.stringify(e as object));
     }
   }
 }
