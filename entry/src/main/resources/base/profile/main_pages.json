@@ -10,6 +10,7 @@
     "ui/pages/BackPage",
     "ui/pages/ReminderPage",
     "ui/pages/SettingsPage",
-    "ui/pages/AboutPage"
+    "ui/pages/AboutPage",
+    "ui/pages/TrashPage"
   ]
 }

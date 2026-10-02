@@ -233,6 +233,27 @@ export default class CardDao {
   }
 
   /**
+   * 获取所有独立软删除的要点（不含随合集删除的）
+   */
+  async listDeletedIndividually(store: relationalStore.RdbStore): Promise<Result<CardEntity[]>> {
+    try {
+      const predicates = new relationalStore.RdbPredicates(CardDao.TABLE_NAME);
+      predicates
+        .isNotNull('deleted_at')
+        .equalTo('deleted_by_deck', 0)
+        .orderByDesc('deleted_at');
+
+      const resultSet = await store.query(predicates);
+      const cards = this.parseResultSet(resultSet);
+      resultSet.close();
+      return Result.success(cards);
+    } catch (e) {
+      LogUtil.e(CardDao.TAG, '查询删除要点列表失败: ' + JSON.stringify(e));
+      return Result.success([]);
+    }
+  }
+
+  /**
    * 统计项目下的有效要点数
    */
   async countByDeck(store: relationalStore.RdbStore, deckId: number): Promise<Result<number>> {

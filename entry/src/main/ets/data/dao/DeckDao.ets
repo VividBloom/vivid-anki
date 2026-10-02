@@ -149,6 +149,26 @@ export default class DeckDao {
   }
 
   /**
+   * 获取所有软删除的项目
+   */
+  async listDeleted(store: relationalStore.RdbStore): Promise<Result<DeckEntity[]>> {
+    try {
+      const predicates = new relationalStore.RdbPredicates(DeckDao.TABLE_NAME);
+      predicates
+        .isNotNull('deleted_at')
+        .orderByDesc('deleted_at');
+
+      const resultSet = await store.query(predicates);
+      const decks = this.parseResultSet(resultSet);
+      resultSet.close();
+      return Result.success(decks);
+    } catch (e) {
+      LogUtil.e(DeckDao.TAG, '查询删除项目列表失败: ' + JSON.stringify(e));
+      return Result.success([]);
+    }
+  }
+
+  /**
    * 低频重算计数（从 card 表统计）
    */
   async recalcCounts(store: relationalStore.RdbStore, deckId: number, nowTs: number): Promise<Result<void>> {

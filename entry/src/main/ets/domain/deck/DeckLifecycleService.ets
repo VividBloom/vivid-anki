@@ -152,6 +152,29 @@ export class DeckLifecycleService {
     });
   }
 
+  /**
+   * 彻底删除牌组。
+   * 
+   * 警告：此操作不可逆，会同时物理删除名下所有已删除的卡片。
+   */
+  async hardDeleteDeck(deckId: number): Promise<void> {
+    await this.runInTransaction(async () => {
+      // 1. 删除所有已在回收站中的卡片
+      await this.store.executeSql(
+        'DELETE FROM card WHERE deck_id = ? AND deleted_at IS NOT NULL',
+        [deckId] as Array<relationalStore.ValueType>
+      );
+      
+      // 2. 删除牌组本身
+      await this.store.executeSql(
+        'DELETE FROM deck WHERE id = ? AND deleted_at IS NOT NULL',
+        [deckId] as Array<relationalStore.ValueType>
+      );
+      
+      LogUtil.i('DeckLifecycle', '牌组 ' + deckId + ' 已彻底删除');
+    });
+  }
+
   /** 恢复单张卡片（不论来源） */
   async restoreCard(cardId: number, nowTs: number = TimeUtil.now()): Promise<void> {
     await this.store.executeSql(
@@ -163,6 +186,17 @@ export class DeckLifecycleService {
     if (deckId > 0) {
       await this.recalcDeckCounts(deckId, nowTs);
     }
+  }
+
+  /**
+   * 彻底删除单张卡片。
+   */
+  async hardDeleteCard(cardId: number): Promise<void> {
+    await this.store.executeSql(
+      'DELETE FROM card WHERE id = ? AND deleted_at IS NOT NULL',
+      [cardId] as Array<relationalStore.ValueType>
+    );
+    LogUtil.i('DeckLifecycle', '卡片 ' + cardId + ' 已彻底删除');
   }
 
   // ============================================================
