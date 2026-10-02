@@ -16,6 +16,7 @@ import { relationalStore } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
 import { CREATE_INDEXES, CREATE_TABLES, INIT_SETTINGS } from './Schema';
 import { LogUtil } from '../../common/utils/LogUtil';
+import { MigrationManager } from '../migration/MigrationManager';
 
 const DB_NAME = 'memo.db';
 /** 每次结构变更 +1，与 user_settings.schema_version 保持一致 */
@@ -101,15 +102,12 @@ export class DbHelper {
    */
   private static async backupBeforeMigration(store: relationalStore.RdbStore,
                                              from: number): Promise<void> {
-    LogUtil.i('DbHelper', '准备升级前快照 from v' + from);
-    // TODO(M2)：调用 MigrationManager.backupPreMigration(store, from)
-    // 在此之前请先不要发布含结构变更的版本
+    await MigrationManager.backupPreMigration(store, from);
   }
 
   private static async migrate(store: relationalStore.RdbStore, from: number,
                                to: number): Promise<void> {
-    LogUtil.i('DbHelper', '迁移 v' + from + ' → v' + to);
-    // TODO(M2)：调用 MigrationManager.migrate(store, from, to)
+    await MigrationManager.migrate(store, from, to);
   }
 
   /**
