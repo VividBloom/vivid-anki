@@ -78,8 +78,8 @@ struct ReviewPage {
       if (this.currentIndex < this.queue.length) {
         await this.loadCard(this.queue[this.currentIndex].id);
       } else {
-        // 完成复习，跳转至完成页或返回首页
-        router.back();
+        // 完成复习，跳转至收尾页
+        router.replaceUrl({ url: 'ui/pages/DonePage' });
       }
     } catch (e) {
       LogUtil.e('ReviewPage', '评分落盘失败: ' + JSON.stringify(e));

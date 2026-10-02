@@ -293,6 +293,28 @@ export default class CardDao {
     }
   }
 
+  /**
+   * 统计指定时间段内的到期要点数
+   */
+  async countDueInRange(store: relationalStore.RdbStore, startTs: number, endTs: number): Promise<Result<number>> {
+    try {
+      const predicates = new relationalStore.RdbPredicates(CardDao.TABLE_NAME);
+      predicates
+        .greaterThanOrEqualTo('due', startTs)
+        .lessThan('due', endTs)
+        .isNull('deleted_at')
+        .equalTo('suspended', 0);
+      
+      const resultSet = await store.query(predicates);
+      const count = resultSet.rowCount;
+      resultSet.close();
+      return Result.success(count);
+    } catch (e) {
+      LogUtil.e(CardDao.TAG, '统计到期数失败: ' + JSON.stringify(e));
+      return Result.success(0);
+    }
+  }
+
   private parseQueueCard(resultSet: relationalStore.ResultSet): QueueCard {
     const state = resultSet.getString(resultSet.getColumnIndex('state'));
     return {

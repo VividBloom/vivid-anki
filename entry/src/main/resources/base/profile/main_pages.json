@@ -1,6 +1,7 @@
 {
   "src": [
     "pages/Index",
-    "ui/pages/ReviewPage"
+    "ui/pages/ReviewPage",
+    "ui/pages/DonePage"
   ]
 }

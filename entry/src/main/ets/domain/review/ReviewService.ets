@@ -27,6 +27,15 @@ export interface ReviewCard {
 }
 
 /**
+ * 复习完成后的收尾数据
+ */
+export interface CompletionSummary {
+  todayCount: number;
+  streakDays: number;
+  tomorrowCount: number;
+}
+
+/**
  * 复习业务服务
  * 
  * 职责：
@@ -179,6 +188,53 @@ export class ReviewService {
     const settingsDao = new SettingsDao();
     const result = await settingsDao.query(store);
     return result.ok ? result.data : null;
+  }
+
+  /**
+   * 获取复习完成后的收尾摘要
+   */
+  async getCompletionSummary(ctx: common.UIAbilityContext): Promise<CompletionSummary> {
+    try {
+      const store = await DbHelper.getInstance(ctx);
+      const statsDao = new DailyStatsDao();
+      const cardDao = new CardDao();
+
+      // 1. 获取今日完成量
+      const today = TimeUtil.todayKey();
+      const todayStats = await statsDao.queryByDate(store, today);
+      const todayCount = todayStats.ok && todayStats.data ? todayStats.data.reviewCount : 0;
+
+      // 2. 计算连续天数 (Streak)
+      const recentStats = await statsDao.queryRecent(store, 31); // 查一个月
+      let streakDays = 0;
+      if (recentStats.ok && recentStats.data.length > 0) {
+        const stats = recentStats.data;
+        // 按日期排序，从新到旧
+        let checkDate = new Date();
+        const studyDates = new Set(stats.filter(s => s.reviewCount > 0).map(s => s.date));
+        
+        // 从今天开始往前数
+        while (studyDates.has(TimeUtil.todayKey(checkDate.getTime()))) {
+          streakDays++;
+          checkDate.setDate(checkDate.getDate() - 1);
+        }
+      }
+
+      // 3. 明日预告 (次日零点到后天零点)
+      const tomorrowStart = TimeUtil.startOfTomorrow();
+      const tomorrowEnd = tomorrowStart + 24 * 60 * 60 * 1000;
+      const tomorrowCountResult = await cardDao.countDueInRange(store, tomorrowStart, tomorrowEnd);
+      const tomorrowCount = tomorrowCountResult.ok ? tomorrowCountResult.data : 0;
+
+      return {
+        todayCount,
+        streakDays,
+        tomorrowCount
+      };
+    } catch (e) {
+      LogUtil.e(ReviewService.TAG, '获取收尾摘要失败: ' + JSON.stringify(e));
+      return { todayCount: 0, streakDays: 0, tomorrowCount: 0 };
+    }
   }
 
   private emptyResult(): QueueResult {
