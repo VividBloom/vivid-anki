@@ -6,6 +6,7 @@ import { UndoService } from '../../domain/review/UndoService';
 import { QueueCard } from '../../common/types/ReviewTypes';
 import { Rating } from '../../domain/scheduler/FsrsScheduler';
 import { RatingBar } from '../components/RatingBar';
+import { CardTypeService, RenderedContent } from '../../domain/card/CardTypeService';
 import { LogUtil } from '../../common/utils/LogUtil';
 
 /**
@@ -22,6 +23,7 @@ struct ReviewPage {
   private reviewService: ReviewService = new ReviewService();
   private resumeService: ResumeService = new ResumeService();
   private undoService: UndoService = new UndoService();
+  private typeService: CardTypeService = new CardTypeService();
   
   @State queue: QueueCard[] = [];
   @State currentIndex: number = 0;
@@ -192,7 +194,7 @@ struct ReviewPage {
           Column() {
             if (!this.isFlipped) {
               // 正面
-              Text(this.currentCard.front)
+              Text(this.typeService.getRenderedContent(this.currentCard.front, this.currentCard.back, this.currentCard.cardType, false).question)
                 .fontSize(32)
                 .fontWeight(FontWeight.Bold)
                 .textAlign(TextAlign.Center)
@@ -201,23 +203,25 @@ struct ReviewPage {
               // 背面
               Scroll() {
                 Column() {
-                  Text(this.currentCard.front)
-                    .fontSize(18)
-                    .fontColor(Color.Gray)
-                    .margin({ bottom: 24 })
-                  
-                  Divider().margin({ bottom: 24 })
-                  
-                  Text(this.currentCard.back)
-                    .fontSize(28)
+                  Text(this.typeService.getRenderedContent(this.currentCard.front, this.currentCard.back, this.currentCard.cardType, true).question)
+                    .fontSize(24)
                     .fontWeight(FontWeight.Medium)
+                    .fontColor(Color.Gray)
+                    .margin({ bottom: 20 })
+                  
+                  Divider().color('#EEEEEE').margin({ bottom: 20 })
+                  
+                  Text(this.typeService.getRenderedContent(this.currentCard.front, this.currentCard.back, this.currentCard.cardType, true).answer)
+                    .fontSize(32)
+                    .fontWeight(FontWeight.Bold)
                     .textAlign(TextAlign.Center)
                   
                   if (this.currentCard.extra) {
                     Text(this.currentCard.extra)
                       .fontSize(16)
                       .fontColor(Color.Gray)
-                      .margin({ top: 16 })
+                      .margin({ top: 24 })
+                      .fontStyle(FontStyle.Italic)
                   }
                 }
                 .width('100%')

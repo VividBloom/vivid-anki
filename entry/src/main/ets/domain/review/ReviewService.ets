@@ -18,6 +18,7 @@ export interface ReviewCard {
   id: number;
   front: string;
   back: string;
+  cardType: string;
   extra?: string;
   stability: number;
   difficulty: number;
@@ -195,6 +196,7 @@ export class ReviewService {
       id: c.id!,
       front: c.front,
       back: c.back,
+      cardType: c.cardType,
       extra: c.extra,
       stability: c.stability,
       difficulty: c.difficulty,
