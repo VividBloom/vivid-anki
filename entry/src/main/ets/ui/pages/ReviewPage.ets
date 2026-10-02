@@ -2,6 +2,7 @@ import { common } from '@kit.AbilityKit';
 import { router } from '@kit.ArkUI';
 import { ReviewService, ReviewCard } from '../../domain/review/ReviewService';
 import { ResumeService } from '../../domain/session/ResumeService';
+import { UndoService } from '../../domain/review/UndoService';
 import { QueueCard } from '../../common/types/ReviewTypes';
 import { Rating } from '../../domain/scheduler/FsrsScheduler';
 import { RatingBar } from '../components/RatingBar';
@@ -20,6 +21,7 @@ import { LogUtil } from '../../common/utils/LogUtil';
 struct ReviewPage {
   private reviewService: ReviewService = new ReviewService();
   private resumeService: ResumeService = new ResumeService();
+  private undoService: UndoService = new UndoService();
   
   @State queue: QueueCard[] = [];
   @State currentIndex: number = 0;
@@ -29,6 +31,12 @@ struct ReviewPage {
   @State startTime: number = 0;
   @State isLeftHanded: boolean = false;
   @State sessionId: string = '';
+  @State showUndoSnackbar: boolean = false;
+  @State snackbarText: string = '';
+  @State snackbarAction: string = '';
+  private snackbarTimer: number = 0;
+  private lastRating: Rating | null = null;
+  private lastDuration: number = 0;
 
   async aboutToAppear(): Promise<void> {
     const ctx = getContext(this) as common.UIAbilityContext;
@@ -83,6 +91,9 @@ struct ReviewPage {
     const ctx = getContext(this) as common.UIAbilityContext;
     
     try {
+      this.lastRating = rating;
+      this.lastDuration = duration;
+
       // 评分落盘并同步更新会话进度
       await this.reviewService.rateCard(ctx, this.currentCard.id!, rating, duration, {
         sessionId: this.sessionId,
@@ -91,6 +102,8 @@ struct ReviewPage {
       });
       
       this.currentIndex++;
+      this.showSnackbar('已评分', '撤销');
+
       if (this.currentIndex < this.queue.length) {
         await this.loadCard(this.queue[this.currentIndex].id);
       } else {
@@ -105,6 +118,42 @@ struct ReviewPage {
     }
   }
 
+  async handleUndo() {
+    if (this.currentIndex <= 0) return;
+    
+    const ctx = getContext(this) as common.UIAbilityContext;
+    const lastCardId = this.queue[this.currentIndex - 1].id;
+    
+    try {
+      const result = await this.undoService.undo(ctx, lastCardId);
+      if (result.ok) {
+        this.currentIndex--;
+        // 同步更新会话进度
+        await this.resumeService.updateProgress(ctx, this.sessionId, this.currentIndex, 
+          this.currentIndex > 0 ? this.queue[this.currentIndex-1].id : 0, 
+          Math.max(0, this.currentIndex - 1));
+          
+        await this.loadCard(this.queue[this.currentIndex].id);
+        this.showSnackbar('已撤销', '重做');
+      }
+    } catch (e) {
+      LogUtil.e('ReviewPage', '撤销失败: ' + JSON.stringify(e));
+    }
+  }
+
+  private showSnackbar(text: string, action: string) {
+    this.snackbarText = text;
+    this.snackbarAction = action;
+    this.showUndoSnackbar = true;
+    
+    if (this.snackbarTimer) {
+      clearTimeout(this.snackbarTimer);
+    }
+    this.snackbarTimer = setTimeout(() => {
+      this.showUndoSnackbar = false;
+    }, 4000);
+  }
+
   build() {
     Column() {
       if (this.isLoading) {
@@ -114,12 +163,25 @@ struct ReviewPage {
         Column() {
           Row() {
             Progress({ value: this.currentIndex, total: this.queue.length, type: ProgressType.Linear })
-              .width('70%')
+              .layoutWeight(1)
               .color(Color.Blue)
+            
             Text(`还剩 ${this.queue.length - this.currentIndex} 张`)
               .fontSize(14)
               .fontColor(Color.Gray)
-              .margin({ left: 12 })
+              .margin({ left: 12, right: 12 })
+
+            Button() {
+              Image($r('app.media.ic_public_undo'))
+                .width(20)
+                .height(20)
+                .fillColor(this.currentIndex > 0 ? Color.Black : Color.Gray)
+            }
+            .variant(ButtonVariant.Plain)
+            .enabled(this.currentIndex > 0)
+            .onClick(() => {
+              this.handleUndo();
+            })
           }
           .width('100%')
           .padding(16)
@@ -204,6 +266,36 @@ struct ReviewPage {
             .fontSize(14)
             .fontColor(Color.Gray)
             .margin({ bottom: 40 })
+        }
+
+        // Snackbar
+        if (this.showUndoSnackbar) {
+          Row() {
+            Text(this.snackbarText)
+              .fontColor(Color.White)
+              .fontSize(14)
+            
+            Blank()
+            
+            Text(this.snackbarAction)
+              .fontColor('#007DFF')
+              .fontSize(14)
+              .fontWeight(FontWeight.Medium)
+              .onClick(() => {
+                if (this.snackbarAction === '撤销') {
+                  this.handleUndo();
+                } else if (this.snackbarAction === '重做' && this.lastRating !== null) {
+                  this.handleRate(this.lastRating);
+                }
+                this.showUndoSnackbar = false;
+              })
+          }
+          .width('90%')
+          .padding({ left: 16, right: 16, top: 12, bottom: 12 })
+          .backgroundColor('#333333')
+          .borderRadius(8)
+          .position({ x: '5%', y: '85%' })
+          .transition({ type: TransitionType.Insert, opacity: 0, translate: { y: 20 } })
         }
       }
     }
