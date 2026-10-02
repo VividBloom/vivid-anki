@@ -3,6 +3,7 @@ import { relationalStore } from '@kit.ArkData';
 import { DbHelper } from '../../data/db/DbHelper';
 import AiDraftDao, { AiDraftEntity } from '../../data/dao/AiDraftDao';
 import { CardService } from './CardService';
+import { AiService, AiGenOptions } from '../ai/AiService';
 import { Result, ErrorCode } from '../../common/utils/Result';
 import { LogUtil } from '../../common/utils/LogUtil';
 
@@ -35,6 +36,49 @@ export interface AiDraftDetail {
 export class AiDraftService {
   private aiDraftDao = new AiDraftDao();
   private cardService = new CardService();
+  private aiService = new AiService();
+
+  /**
+   * 启动 AI 生成流程
+   * 
+   * @param ctx UI 上下文
+   * @param options 生成配置
+   * @returns 草稿记录 ID
+   */
+  async startGeneration(ctx: common.UIAbilityContext, options: AiGenOptions): Promise<Result<number>> {
+    const store = await DbHelper.getInstance(ctx);
+    
+    // 1. 先在数据库创建一个 pending 状态的记录（quota_charged 默认为 0）
+    const insertResult = await this.aiDraftDao.insert(store, {
+      sourceText: options.sourceText,
+      sourceType: options.sourceType,
+      status: 'pending',
+      quotaCharged: 0 
+    });
+
+    if (!insertResult.ok) return insertResult;
+    const draftId = insertResult.data;
+
+    // 2. 调用 AI 服务进行提取
+    const genResult = await this.aiService.generate(options);
+
+    if (genResult.ok) {
+      // 3a. 成功：更新草稿内容并计费
+      const cards = JSON.parse(genResult.data) as Array<Object>;
+      await store.update({
+        'cards_json': genResult.data,
+        'status': 'pending', // 保持 pending 直到用户预览确认
+        'generated_count': cards.length,
+        'quota_charged': 1 // 成功才计费
+      }, new relationalStore.RdbPredicates('ai_draft').equalTo('id', draftId));
+      
+      return Result.success(draftId);
+    } else {
+      // 3b. 失败：标记原因且不计费（quotaCharged 保持 0）
+      await this.aiDraftDao.markFailed(store, draftId, genResult.message);
+      return Result.failure(genResult.code, genResult.message);
+    }
+  }
 
   /**
    * 从草稿实体解析出待预览的要点列表

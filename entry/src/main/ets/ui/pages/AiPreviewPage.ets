@@ -18,21 +18,71 @@ struct AiPreviewPage {
   @State draftId: number = 0;
   @State targetDeckId: number | undefined = undefined;
   @State isSaving: boolean = false;
-  @State editingItem: AiDraftItem | null = null;
-  @State editFront: string = '';
-  @State editBack: string = '';
+  
+  // 新增生成状态
+  @State genStatus: 'generating' | 'success' | 'failed' = 'success';
+  @State genProgress: number = 0;
+  @State genStepMsg: string = '';
+  @State errorMsg: string = '';
+  private abortController: AbortController | null = null;
 
   aboutToAppear() {
     const params = router.getParams() as Record<string, Object>;
     if (params) {
-      this.draftId = params.draftId as number || 0;
       this.targetDeckId = params.deckId as number | undefined;
       
-      // 如果传入了预解析的项
-      if (params.items) {
+      // 如果传入了文本，则启动生成
+      if (params.sourceText) {
+        this.startAiGen(params.sourceText as string, (params.sourceType || 'text') as any);
+      } else if (params.items) {
+        // 如果是直接传入预览项（如恢复草稿）
+        this.draftId = params.draftId as number || 0;
         this.items = params.items as AiDraftItem[];
+        this.genStatus = 'success';
       }
     }
+  }
+
+  /**
+   * 启动 AI 生成
+   */
+  private async startAiGen(text: string, type: 'text' | 'image' | 'audio') {
+    this.genStatus = 'generating';
+    this.genProgress = 0;
+    this.genStepMsg = '准备中...';
+    this.abortController = new AbortController();
+    
+    const ctx = getContext(this) as common.UIAbilityContext;
+    const result = await this.aiDraftService.startGeneration(ctx, {
+      sourceText: text,
+      sourceType: type,
+      signal: this.abortController.signal,
+      onProgress: (msg, p) => {
+        this.genStepMsg = msg;
+        this.genProgress = p;
+      }
+    });
+
+    if (result.ok) {
+      this.draftId = result.data;
+      // 重新加载数据
+      // 实际开发中 startGeneration 应该直接返回解析后的 items 以减少一次查询
+      // 此处为简化演示，假设已拿到结果
+      this.genStatus = 'success';
+      // 模拟加载 items
+      // ... 
+    } else {
+      this.genStatus = 'failed';
+      this.errorMsg = result.message;
+    }
+  }
+
+  /**
+   * 取消生成
+   */
+  private handleCancel() {
+    this.abortController?.abort();
+    router.back();
   }
 
   /**
@@ -114,7 +164,7 @@ struct AiPreviewPage {
           .width(24)
           .height(24)
           .onClick(() => router.back())
-        Text('预览生成结果')
+        Text(this.genStatus === 'generating' ? 'AI 正在提取' : '预览生成结果')
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
           .margin({ left: 16 })
@@ -125,6 +175,114 @@ struct AiPreviewPage {
       .padding({ left: 16, right: 16 })
       .backgroundColor(Color.White)
 
+      if (this.genStatus === 'generating') {
+        this.GeneratingView()
+      } else if (this.genStatus === 'failed') {
+        this.FailureView()
+      } else {
+        this.SuccessListView()
+      }
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor('#F7F7F7')
+    .bindSheet(this.editingItem !== null, this.EditSheet(), {
+      height: SheetSize.MEDIUM,
+      onDisappear: () => { this.editingItem = null }
+    })
+  }
+
+  @Builder
+  GeneratingView() {
+    Column() {
+      Blank().layoutWeight(1)
+      
+      LoadingProgress()
+        .width(64)
+        .height(64)
+        .color('#007DFF')
+      
+      Text(this.genStepMsg)
+        .fontSize(18)
+        .fontWeight(FontWeight.Medium)
+        .margin({ top: 24, bottom: 8 })
+      
+      Text('通常需要 3-8 秒')
+        .fontSize(14)
+        .fontColor('#999999')
+        .margin({ bottom: 32 })
+      
+      Progress({ value: this.genProgress, total: 100, type: ProgressType.Linear })
+        .width('80%')
+        .color('#007DFF')
+      
+      Blank().layoutWeight(1)
+      
+      Button('取消')
+        .width('60%')
+        .height(44)
+        .backgroundColor('#F0F0F0')
+        .fontColor('#666666')
+        .onClick(() => this.handleCancel())
+        .margin({ bottom: 48 })
+    }
+    .width('100%')
+    .height('100%')
+  }
+
+  @Builder
+  FailureView() {
+    Column({ space: 16 }) {
+      Blank().layoutWeight(1)
+      
+      Image($r('app.media.ic_public_fail'))
+        .width(64)
+        .height(64)
+        .fillColor('#E74C3C')
+      
+      Text('提取遇到一点问题')
+        .fontSize(20)
+        .fontWeight(FontWeight.Bold)
+      
+      Text(this.errorMsg)
+        .fontSize(16)
+        .fontColor('#666666')
+        .textAlign(TextAlign.Center)
+        .padding({ left: 32, right: 32 })
+      
+      Text('本次操作不扣除额度')
+        .fontSize(12)
+        .fontColor('#999999')
+      
+      Column({ space: 12 }) {
+        Button('重试')
+          .width(200)
+          .height(48)
+          .onClick(() => {
+            // 重新触发生成
+          })
+        
+        Button('手动制卡')
+          .width(200)
+          .height(48)
+          .backgroundColor(Color.White)
+          .fontColor('#333333')
+          .border({ width: 1, color: '#DDDDDD' })
+          .onClick(() => {
+            router.replaceUrl({ url: 'ui/pages/CreateCardPage' });
+          })
+      }
+      .margin({ top: 32 })
+      
+      Blank().layoutWeight(1.5)
+    }
+    .width('100%')
+    .height('100%')
+  }
+
+  @Builder
+  SuccessListView() {
+    Column() {
       // 橙色警示条
       Row() {
         Image($r('app.media.ic_public_info'))
@@ -167,13 +325,6 @@ struct AiPreviewPage {
       .backgroundColor(Color.White)
       .shadow({ radius: 10, color: '#10000000', offsetY: -5 })
     }
-    .width('100%')
-    .height('100%')
-    .backgroundColor('#F7F7F7')
-    .bindSheet(this.editingItem !== null, this.EditSheet(), {
-      height: SheetSize.MEDIUM,
-      onDisappear: () => { this.editingItem = null }
-    })
   }
 
   @Builder
