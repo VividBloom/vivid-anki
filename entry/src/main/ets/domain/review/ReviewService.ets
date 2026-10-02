@@ -184,6 +184,16 @@ export class ReviewService {
     };
   }
 
+  /**
+   * 获取用户设置
+   */
+  async getSettings(ctx: common.UIAbilityContext) {
+    const store = await DbHelper.getInstance(ctx);
+    const settingsDao = new SettingsDao();
+    const result = await settingsDao.query(store);
+    return result.ok ? result.data : null;
+  }
+
   private emptyResult(): QueueResult {
     return {
       cards: [],

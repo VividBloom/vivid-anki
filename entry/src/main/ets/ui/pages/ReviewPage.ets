@@ -25,12 +25,19 @@ struct ReviewPage {
   @State isFlipped: boolean = false;
   @State isLoading: boolean = true;
   @State startTime: number = 0;
+  @State isLeftHanded: boolean = false;
 
   async aboutToAppear(): Promise<void> {
     const ctx = getContext(this) as common.UIAbilityContext;
     const params = router.getParams() as Record<string, Object>;
     
     try {
+      // 加载用户偏好
+      const settings = await this.reviewService.getSettings(ctx);
+      if (settings) {
+        this.isLeftHanded = settings.leftHanded === 1;
+      }
+
       if (params && params.queue) {
         this.queue = params.queue as QueueCard[];
       } else {
@@ -145,12 +152,22 @@ struct ReviewPage {
           .shadow({ radius: 20, color: '#1A000000', offsetX: 0, offsetY: 8 })
           .justifyContent(FlexAlign.Center)
           .onClick(() => {
-            if (!this.isFlipped) {
-              animateTo({ duration: 300 }, () => {
-                this.isFlipped = true;
-              });
-            }
+            this.flipCard();
           })
+          .gesture(
+            GestureGroup(GestureMode.Parallel,
+              // 上滑翻面
+              SwipeGesture({ direction: SwipeDirection.Up })
+                .onAction(() => {
+                  this.flipCard();
+                }),
+              // 左右滑 = 再来一次
+              SwipeGesture({ direction: SwipeDirection.Horizontal })
+                .onAction(() => {
+                  this.handleRate(Rating.Again);
+                })
+            )
+          )
         }
         .layoutWeight(1)
         .width('100%')
@@ -159,11 +176,12 @@ struct ReviewPage {
         // 底部评分栏
         if (this.isFlipped) {
           RatingBar({
-            onRate: (rating: Rating) => this.handleRate(rating)
+            onRate: (rating: Rating) => this.handleRate(rating),
+            isLeftHanded: this.isLeftHanded
           })
           .transition({ type: TransitionType.Insert, translate: { y: 100 } })
         } else {
-          Text('点击屏幕查看答案')
+          Text('点击屏幕或上滑查看答案')
             .fontSize(14)
             .fontColor(Color.Gray)
             .margin({ bottom: 40 })
@@ -173,5 +191,13 @@ struct ReviewPage {
     .width('100%')
     .height('100%')
     .backgroundColor('#F7F7F7')
+  }
+
+  private flipCard() {
+    if (!this.isFlipped) {
+      animateTo({ duration: 300 }, () => {
+        this.isFlipped = true;
+      });
+    }
   }
 }
