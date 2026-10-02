@@ -4,6 +4,7 @@ import { DbHelper } from '../../data/db/DbHelper';
 import CardDao, { CardEntity } from '../../data/dao/CardDao';
 import DeckDao, { DeckEntity } from '../../data/dao/DeckDao';
 import { MediaService } from './MediaService';
+import { DeckLifecycleService } from '../deck/DeckLifecycleService';
 import { Result, ErrorCode } from '../../common/utils/Result';
 import { TimeUtil } from '../../common/utils/TimeUtil';
 import { ParsedItem } from './CardParseService';
@@ -148,6 +149,15 @@ export class CardService {
       })));
     }
     return Result.fail(res.message);
+  }
+
+  /**
+   * 软删除要点
+   */
+  async softDeleteCard(ctx: common.UIAbilityContext, cardId: number): Promise<void> {
+    const store = await DbHelper.getInstance(ctx);
+    const lifecycleSvc = new DeckLifecycleService(store);
+    await lifecycleSvc.softDeleteCard(cardId);
   }
 
   /**

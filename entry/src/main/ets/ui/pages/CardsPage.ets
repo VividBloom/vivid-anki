@@ -4,6 +4,7 @@ import { DeckService, DeckDTO } from '../../domain/deck/DeckService';
 import { CardService, CardDTO } from '../../domain/card/CardService';
 import { StateView } from '../components/StateView';
 import { SkeletonList } from '../components/Skeleton';
+import { DeleteConfirmDialog } from '../components/DeleteConfirmDialog';
 import { LogUtil } from '../../common/utils/LogUtil';
 
 /**
@@ -29,6 +30,41 @@ export struct CardsPage {
   @State errorMessage: string = '';
   @State isSearchMode: boolean = false;
   @State newDeckName: string = '';
+  
+  // 删除弹窗控制
+  @State pendingDeleteDeck: DeckDTO | null = null;
+  @State pendingDeleteCard: CardDTO | null = null;
+
+  deleteDeckDialog: CustomDialogController = new CustomDialogController({
+    builder: DeleteConfirmDialog({
+      itemName: this.pendingDeleteDeck?.name || '',
+      itemType: 'deck',
+      cardCount: this.pendingDeleteDeck?.cardCount || 0,
+      onConfirm: () => {
+        if (this.pendingDeleteDeck) {
+          this.executeDeleteDeck(this.pendingDeleteDeck.id);
+        }
+      }
+    }),
+    autoCancel: true,
+    alignment: DialogAlignment.Center,
+    customStyle: true
+  });
+
+  deleteCardDialog: CustomDialogController = new CustomDialogController({
+    builder: DeleteConfirmDialog({
+      itemName: this.pendingDeleteCard?.front || '',
+      itemType: 'card',
+      onConfirm: () => {
+        if (this.pendingDeleteCard) {
+          this.executeDeleteCard(this.pendingDeleteCard.id);
+        }
+      }
+    }),
+    autoCancel: true,
+    alignment: DialogAlignment.Center,
+    customStyle: true
+  });
 
   async aboutToAppear() {
     await this.refreshData();
@@ -66,6 +102,33 @@ export struct CardsPage {
       await this.refreshData();
     } else {
       promptAction.showToast({ message: res.message });
+    }
+  }
+
+  private async executeDeleteDeck(deckId: number) {
+    const ctx = getContext(this) as common.UIAbilityContext;
+    try {
+      await this.deckService.softDeleteDeck(ctx, deckId);
+      promptAction.showToast({ message: '合集已移入回收站' });
+      await this.refreshData();
+    } catch (e) {
+      LogUtil.e('CardsPage', '删除合集失败: ' + JSON.stringify(e));
+      promptAction.showToast({ message: '操作失败，请稍后重试' });
+    }
+  }
+
+  private async executeDeleteCard(cardId: number) {
+    const ctx = getContext(this) as common.UIAbilityContext;
+    try {
+      await this.cardService.softDeleteCard(ctx, cardId);
+      promptAction.showToast({ message: '要点已移入回收站' });
+      if (this.isSearchMode) {
+        await this.handleSearch(this.searchKeyword);
+      }
+      await this.refreshData();
+    } catch (e) {
+      LogUtil.e('CardsPage', '删除要点失败: ' + JSON.stringify(e));
+      promptAction.showToast({ message: '操作失败，请稍后重试' });
     }
   }
 
@@ -165,6 +228,13 @@ export struct CardsPage {
             // 跳转到合集详情（待开发）
             promptAction.showToast({ message: '合集详情功能即将上线' });
           })
+          .gesture(
+            LongPressGesture()
+              .onAction(() => {
+                this.pendingDeleteDeck = deck;
+                this.deleteDeckDialog.open();
+              })
+          )
         }
       }, (deck: DeckDTO) => deck.id.toString())
     }
@@ -199,9 +269,19 @@ export struct CardsPage {
             .borderRadius(12)
             .alignItems(HorizontalAlign.Start)
             .onClick(() => {
-              // 跳转到要点详情/编辑（待开发）
-              promptAction.showToast({ message: '要点编辑功能即将上线' });
+              // 跳转到要点编辑
+              router.pushUrl({
+                url: 'ui/pages/CardEditPage',
+                params: { card: card }
+              });
             })
+            .gesture(
+              LongPressGesture()
+                .onAction(() => {
+                  this.pendingDeleteCard = card;
+                  this.deleteCardDialog.open();
+                })
+            )
           }
         }, (card: CardDTO) => card.id.toString())
       }

@@ -11,6 +11,7 @@
     "ui/pages/ReminderPage",
     "ui/pages/SettingsPage",
     "ui/pages/AboutPage",
-    "ui/pages/TrashPage"
+    "ui/pages/TrashPage",
+    "ui/pages/CardEditPage"
   ]
 }

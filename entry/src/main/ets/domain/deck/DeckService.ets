@@ -1,6 +1,7 @@
 import { common } from '@kit.AbilityKit';
 import { DbHelper } from '../../data/db/DbHelper';
 import DeckDao from '../../data/dao/DeckDao';
+import { DeckLifecycleService } from './DeckLifecycleService';
 import { Result } from '../../common/utils/Result';
 import { LogUtil } from '../../common/utils/LogUtil';
 
@@ -65,5 +66,14 @@ export class DeckService {
   async createDeck(ctx: common.UIAbilityContext, name: string): Promise<Result<number>> {
     const store = await DbHelper.getInstance(ctx);
     return await this.deckDao.insert(store, { name });
+  }
+
+  /**
+   * 软删除合集
+   */
+  async softDeleteDeck(ctx: common.UIAbilityContext, deckId: number): Promise<void> {
+    const store = await DbHelper.getInstance(ctx);
+    const lifecycleSvc = new DeckLifecycleService(store);
+    await lifecycleSvc.softDeleteDeck(deckId);
   }
 }
