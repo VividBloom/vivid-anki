@@ -124,11 +124,17 @@ struct SettingsPage {
 
           // 关于项
           ListItem() {
+            this.SettingItem('导出数据', '备份或迁移到 Anki', () => {
+              router.pushUrl({ url: 'ui/pages/ExportPage' });
+            })
+          }
+
+          ListItem() {
             this.SettingItem('回收站', '30 天内可恢复', () => {
               router.pushUrl({ url: 'ui/pages/TrashPage' });
             })
-            .margin({ top: 24 })
           }
+          .margin({ top: 24 })
 
           ListItem() {
             this.SettingItem('关于瞄一眼', '', () => {
