@@ -2,6 +2,7 @@ import { common } from '@kit.AbilityKit';
 import { router, promptAction } from '@kit.ArkUI';
 import { ReviewService, HomeData } from '../../domain/review/ReviewService';
 import { ResumeService } from '../../domain/session/ResumeService';
+import { ReturnService } from '../../domain/review/ReturnService';
 import { LogUtil } from '../../common/utils/LogUtil';
 
 /**
@@ -14,6 +15,7 @@ import { LogUtil } from '../../common/utils/LogUtil';
 export struct TodayPage {
   private reviewService: ReviewService = new ReviewService();
   private resumeService: ResumeService = new ResumeService();
+  private returnService: ReturnService = new ReturnService();
   
   @State homeData: HomeData = {
     summary: {
@@ -37,6 +39,13 @@ export struct TodayPage {
   private async refreshData(ctx: common.UIAbilityContext) {
     this.isLoading = true;
     try {
+      // 1. 优先检测是否需要进入回归引导
+      const returnStatus = await this.returnService.checkReturnMode(ctx);
+      if (returnStatus.shouldEnter) {
+        router.pushUrl({ url: 'ui/pages/BackPage' });
+        return;
+      }
+
       this.homeData = await this.reviewService.getHomeData(ctx);
       
       // 检测活跃会话

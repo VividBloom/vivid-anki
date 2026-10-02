@@ -6,6 +6,7 @@
     "ui/pages/OnboardPage",
     "ui/pages/CreateCardPage",
     "ui/pages/CardsPage",
-    "ui/pages/StatsPage"
+    "ui/pages/StatsPage",
+    "ui/pages/BackPage"
   ]
 }

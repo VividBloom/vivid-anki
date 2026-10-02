@@ -92,6 +92,27 @@ export default class RevlogDao {
   }
 
   /**
+   * 查找全局最后一次有效复习记录
+   */
+  async findGlobalLastValid(store: relationalStore.RdbStore): Promise<Result<RevlogEntity | null>> {
+    try {
+      const predicates = new relationalStore.RdbPredicates(RevlogDao.TABLE_NAME);
+      predicates
+        .equalTo('is_deleted', 0)
+        .orderByDesc('reviewed_at')
+        .limitAs(1);
+
+      const resultSet = await store.query(predicates);
+      const logs = this.parseResultSet(resultSet);
+      resultSet.close();
+      return Result.success(logs.length > 0 ? logs[0] : null);
+    } catch (e) {
+      LogUtil.e(RevlogDao.TAG, '查找全局最近日志失败: ' + JSON.stringify(e));
+      return Result.success(null);
+    }
+  }
+
+  /**
    * 查找某张卡片最近一条有效日志
    * 按 reviewed_at 倒序查第一条 is_deleted=0 的记录
    * 必须命中 idx_revlog_card (card_id, reviewed_at DESC) WHERE is_deleted = 0
