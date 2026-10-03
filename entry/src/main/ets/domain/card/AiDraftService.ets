@@ -141,9 +141,14 @@ export class AiDraftService {
         throw new Error(updateResult.message);
       }
 
-      // 4. 埋点
+      // 4. 获取生成的总数以计算采纳率
+      const draftResult = await this.aiDraftDao.queryById(store, draftId);
+      const generatedCount = draftResult.ok && draftResult.data ? draftResult.data.generatedCount : 0;
+
+      // 5. 埋点
       Analytics.logEvent(Analytics.EVENT_AI_GEN_CONFIRM, {
-        kept_count: confirmedItems.length
+        kept_count: confirmedItems.length,
+        generated_count: generatedCount
       });
 
       return createResult;

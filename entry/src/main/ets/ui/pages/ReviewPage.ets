@@ -41,6 +41,7 @@ struct ReviewPage {
   @State startTime: number = 0;
   @State isLeftHanded: boolean = false;
   @State sessionId: string = '';
+  @State deckId: number = 0;
   @State showUndoSnackbar: boolean = false;
   @State snackbarText: string = '';
   @State snackbarAction: string = '';
@@ -66,6 +67,7 @@ struct ReviewPage {
       if (params && params.queue) {
         this.queue = params.queue as QueueCard[];
         this.sessionId = params.sessionId as string || '';
+        this.deckId = params.deckId as number || 0;
         this.currentIndex = params.startIndex as number || 0;
         
         // 如果是从中途恢复的，记录中断恢复埋点
@@ -233,7 +235,8 @@ struct ReviewPage {
       } else {
         // 完成复习，记录会话完成埋点
         Analytics.logEvent(Analytics.EVENT_SESSION_COMPLETE, {
-          total: this.queue.length
+          total: this.queue.length,
+          deck_id: this.deckId
         });
         
         // 结束会话并跳转至收尾页

@@ -51,6 +51,22 @@ export default class AiDraftDao {
   }
 
   /**
+   * 按 ID 查询
+   */
+  async queryById(store: relationalStore.RdbStore, id: number): Promise<Result<AiDraftEntity | null>> {
+    try {
+      const predicates = new relationalStore.RdbPredicates(AiDraftDao.TABLE_NAME);
+      predicates.equalTo('id', id);
+      const resultSet = await store.query(predicates);
+      const list = this.parseResultSet(resultSet);
+      resultSet.close();
+      return Result.success(list.length > 0 ? list[0] : null);
+    } catch (e) {
+      return Result.failure(ErrorCode.DB_QUERY, '查询 AI 草稿失败');
+    }
+  }
+
+  /**
    * 确认草稿（用户选择保留某些生成项）
    * 失败或未生成时不应扣除额度，由业务层控制，此处仅负责持久化。
    */

@@ -37,11 +37,11 @@ export class Analytics {
   static readonly EVENT_CARD_FLIP = 'card_flip';
   /** 执行评分操作（点击四档按钮之一） */
   static readonly EVENT_CARD_RATE = 'card_rate';
-  /** 完成今日复习计划并进入结算页 */
+  /** 完成今日复习计划并进入结算页。参数：total(总数), deck_id(合集ID, 0为混合) */
   static readonly EVENT_SESSION_COMPLETE = 'session_complete';
-  /** 启动 AI 提取/制卡请求 */
+  /** 启动 AI 提取/制卡请求。参数：source_type(来源类型) */
   static readonly EVENT_AI_GEN_START = 'ai_gen_start';
-  /** 用户在预览页确认并采纳了 AI 生成的内容 */
+  /** 用户在预览页确认并采纳了 AI 生成的内容。参数：kept_count(保留数), generated_count(生成总数) */
   static readonly EVENT_AI_GEN_CONFIRM = 'ai_gen_confirm';
   /** 用户手动保存了一张新创建的要点 */
   static readonly EVENT_MANUAL_CREATE = 'manual_create';
@@ -49,7 +49,7 @@ export class Analytics {
   static readonly EVENT_DECK_IMPORT = 'deck_import';
 
   // --- 留存与流失 (Retention/Churn) - 6 个 ---
-  /** 在复习过程中点击「撤销」评分 */
+  /** 在复习过程中点击「撤销」评分。参数：card_id, rating(被撤销的评分) */
   static readonly EVENT_UNDO_ACTION = 'undo_action';
   /** 触发中断恢复逻辑，从上次退出的位置继续复习 */
   static readonly EVENT_SESSION_RESUME = 'session_resume';
