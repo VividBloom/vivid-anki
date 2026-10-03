@@ -58,7 +58,7 @@ struct AboutPage {
               .width('100%')
               .margin({ bottom: 12 })
             
-            Text('本应用核心算法采用自研 FSRS-6 + BSD-3 参数，未使用 rslib。旨在为鸿蒙用户提供极致流畅的记忆体验。')
+            Text('本应用核心算法采用自研 FSRS-6 + BSD-3 参数，未使用 rslib。旨在为鸿蒙用户提供极致流畅的学习体验。')
               .fontSize(14)
               .fontColor($r('app.color.text_secondary'))
               .lineHeight(22)
