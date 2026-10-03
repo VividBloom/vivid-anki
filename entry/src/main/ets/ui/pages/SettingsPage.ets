@@ -42,14 +42,14 @@ struct SettingsPage {
     }
   }
 
-  private async toggleSetting(key: keyof SettingsDTO, value: boolean) {
+  private async toggleSetting(key: keyof SettingsDTO, value: boolean | number) {
     const ctx = getContext(this) as common.UIAbilityContext;
-    const patch: Partial<SettingsDTO> = {};
-    (patch as any)[key] = value;
+    const patch: Record<string, boolean | number> = {};
+    patch[key] = value;
     
     const success = await this.settingsService.updateSetting(ctx, patch);
     if (success) {
-      (this.settings as any)[key] = value;
+      (this.settings as Record<string, boolean | number>)[key] = value;
     } else {
       promptAction.showToast({ message: '修改失败' });
     }

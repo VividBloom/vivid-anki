@@ -101,34 +101,46 @@ export class SchedulingInfo {
 // 调度器
 // ============================================================
 
+/**
+ * FSRS-6 调度器 —— ArkTS 参考实现
+ * 
+ * 核心逻辑：基于自由间隔重复调度算法 (FSRS-6) 计算记忆状态与下次复习时间。
+ * 设计约束：
+ * 1. 纯函数设计：不依赖外部环境（UI/DB/网络），便于测试与迁移。
+ * 2. 状态隔离：严格区分新卡片（S=0/D=0）与已评分卡片的处理逻辑。
+ * 3. 算法对齐：权重向量 (21参数) 与官方 fsrs crate 保持一致，支持 BSD-3 协议。
+ */
 export class FsrsScheduler {
   private w: number[];
   private decay: number;
   private factor: number;
 
   /**
-   * @param params FSRS 权重向量，默认使用 FSRS-6 官方默认参数
+   * 构造函数：注入算法权重向量
+   * @param params 21位长度的权重数组，缺省使用 FSRS6_DEFAULT_PARAMS
+   * @throws Error 当参数长度不等于 21 时抛出异常
    */
   constructor(params: number[] = FSRS6_DEFAULT_PARAMS) {
     if (params.length !== 21) {
       throw new Error('FSRS-6 参数必须恰好 21 个，实际为 ' + params.length);
     }
+    // 使用 Math.fround 强制 32 位浮点精度，对齐 Rust 实现，减少多轮调度后的累计误差
     this.w = params.map(v => Math.fround(v));
-    // 遗忘曲线：R(t,S) = (1 + FACTOR * t / S) ^ DECAY
+    // 遗忘曲线基本公式：R = (1 + factor * t / S) ^ decay
     this.decay = Math.fround(-this.w[20]);
-    // FACTOR 由 DECAY 导出，以保证恒等式 R(S, S) === 0.9 成立
+    // 预计算因子，保证当间隔 t = 稳定性 S 时，留存率 R 恰好等于 0.9
     this.factor = Math.fround(Math.fround(Math.pow(Math.fround(0.9), Math.fround(1 / this.decay))) - 1);
   }
 
-  // ---------------- 遗忘曲线 ----------------
-
   /**
-   * 可提取性 R：距上次复习 elapsedDays 天后，仍能回忆起来的概率。
-   * 恒等式：retrievability(stability, stability) ≈ 0.9
+   * 计算可提取性 (Retrievability)：即用户能回忆起内容的概率
+   * @param elapsedDays 自上次复习以来经过的天数
+   * @param stability 当前卡片的稳定性（记忆持续时间）
+   * @returns 0.0 ~ 1.0 之间的概率值
    */
   retrievability(elapsedDays: number, stability: number): number {
     if (stability <= 0) {
-      // 新卡没有稳定性；返回 0 并由调用方走初始化分支
+      // 未初始化的卡片无稳定性概念，返回 0 强制走初始化逻辑
       return 0;
     }
     const t = Math.fround(elapsedDays);
@@ -139,8 +151,10 @@ export class FsrsScheduler {
   }
 
   /**
-   * 由稳定性与目标留存率反解间隔（天）。
-   * 恒等式：nextInterval(s, 0.9) === s（误差应 < 1e-9）
+   * 根据目标留存率反解复习间隔
+   * @param stability 记忆稳定性
+   * @param desiredRetention 用户期望的留存率（推荐 0.9）
+   * @returns 理论复习间隔天数（浮点数）
    */
   nextInterval(stability: number, desiredRetention: number): number {
     const dr = Math.fround(Math.min(Math.max(desiredRetention, 0.01), 0.99));
@@ -151,18 +165,19 @@ export class FsrsScheduler {
     return Math.fround(Math.max(raw, 0));
   }
 
-  // ---------------- 初始化（新卡分支） ----------------
-
   /**
-   * 初始稳定性：S0(G) = max(w[G-1], S_MIN)
-   * 注意这里绝不能返回 0 —— 否则后续 S^(-w9) 会变成 Infinity。
+   * 新卡片初始化稳定性计算
+   * @param rating 用户评分 (1-4)
+   * @returns 初始稳定性值，下限受 S_MIN_INIT 保护
    */
   initStability(rating: number): number {
     return Math.max(this.w[rating - 1], S_MIN_INIT);
   }
 
   /**
-   * 初始难度（不钳制），用于均值回归目标。
+   * 计算初始难度值
+   * @param rating 用户评分
+   * @returns 初始难度（原始值）
    */
   private initDifficultyRaw(rating: number): number {
     const rMinus1 = Math.fround(rating - 1);
@@ -171,16 +186,19 @@ export class FsrsScheduler {
   }
 
   /**
-   * 初始难度：D0(G) = clamp(w4 - e^(w5*(G-1)) + 1, 1, 10)
+   * 获取受限的初始难度值 (1.0 ~ 10.0)
+   * @param rating 用户评分
+   * @returns 钳制后的难度值
    */
   initDifficulty(rating: number): number {
     return this.clampDifficulty(this.initDifficultyRaw(rating));
   }
 
-  // ---------------- 更新（老卡分支） ----------------
-
   /**
-   * 难度更新：先按评分做增量，再向 D0(Easy) 做均值回归，防止漂移。
+   * 计算下一次复习后的难度值（含均值回归逻辑）
+   * @param difficulty 当前难度
+   * @param rating 本次评分
+   * @returns 更新后的难度值
    */
   nextDifficulty(difficulty: number, rating: number): number {
     const rMinus3 = Math.fround(rating - 3);
@@ -188,6 +206,8 @@ export class FsrsScheduler {
     const tenMinusD = Math.fround(10 - difficulty);
     const ratio = Math.fround(tenMinusD / 9);
     const dPrime = Math.fround(difficulty + Math.fround(delta * ratio));
+    
+    // 均值回归：防止难度数值向极端偏移，向“简单”评分对应的难度靠拢
     const target = this.initDifficultyRaw(Rating.Easy);
     const w7 = this.w[7];
     const reverted = Math.fround(Math.fround(w7 * target) + Math.fround(Math.fround(1 - w7) * dPrime));
@@ -195,22 +215,34 @@ export class FsrsScheduler {
   }
 
   /**
-   * 稳定性更新。同日复习（elapsedDays <= 0）且非新卡走短期公式，否则走长期公式。
+   * 计算评分后的新稳定性
+   * @param difficulty 当前难度
+   * @param stability 当前稳定性
+   * @param r 当前可提取性（概率）
+   * @param rating 用户评分
+   * @param elapsedDays 实际间隔天数
+   * @returns 更新后的稳定性
    */
   nextStability(difficulty: number, stability: number, r: number, rating: number,
                 elapsedDays: number): number {
     let next: number;
+    // 复杂逻辑分支：区分同日复习、失败反馈、成功反馈三种场景
     if (elapsedDays <= 0) {
+      // 同日复习（短时记忆）：使用短期稳定性公式，防止频繁刷分导致稳定性膨胀
       next = this.shortTermStability(stability, rating);
     } else if (rating === Rating.Again) {
+      // 遗忘反馈：大幅降低稳定性，但受限于卡片历史最小稳定性
       next = this.stabilityAfterFailure(difficulty, stability, r);
     } else {
+      // 回忆成功：根据当前难度与留存率计算新的稳定性增量
       next = this.stabilityAfterSuccess(difficulty, stability, r, rating);
     }
     return this.clampStability(next);
   }
 
-  /** 短期稳定性（同日复习）：S' = S * e^(w17*(G-3+w18)) * S^(-w19) */
+  /**
+   * 短期稳定性算法：用于处理同一天内的多次复习
+   */
   private shortTermStability(stability: number, rating: number): number {
     const rMinus3 = Math.fround(rating - 3);
     const w18 = this.w[18];
@@ -224,8 +256,7 @@ export class FsrsScheduler {
   }
 
   /**
-   * 成功回忆（Hard / Good / Easy）后的稳定性。
-   * S' = S * (1 + t_d * t_s * t_r * h * b * e^w8)
+   * 成功复习后的长期稳定性增长公式
    */
   private stabilityAfterSuccess(difficulty: number, stability: number, r: number,
                                 rating: number): number {
@@ -245,7 +276,7 @@ export class FsrsScheduler {
   }
 
   /**
-   * 遗忘（Again）后的稳定性。
+   * 复习失败（遗忘）后的稳定性惩罚公式
    */
   private stabilityAfterFailure(difficulty: number, stability: number, r: number): number {
     const dF = Math.fround(Math.pow(difficulty, Math.fround(-this.w[12])));
@@ -260,22 +291,21 @@ export class FsrsScheduler {
     return Math.fround(Math.min(next, cap));
   }
 
-  // ---------------- 主入口 ----------------
-
   /**
-   * 计算一次评分后的完整调度结果。
-   *
-   * @param state        当前记忆状态；未初始化（S=0 且 D=0）时自动走新卡分支
-   * @param elapsedDays  距上次复习的天数；同日复习传 0
-   * @param rating       1=再来一次 2=有点难 3=记得 4=太简单
-   * @param desiredRetention 目标留存率，默认 0.9
+   * 调度核心入口：计算单次评分后的所有记忆参数
+   * @param state 当前记忆状态（稳定性与难度）
+   * @param elapsedDays 实际经过天数
+   * @param rating 用户评分
+   * @param desiredRetention 期望留存率
+   * @returns 包含新状态、间隔及可提取性的调度结果对象
    */
   next(state: MemoryState, elapsedDays: number, rating: number,
        desiredRetention: number = DEFAULT_DESIRED_RETENTION): SchedulingInfo {
     this.assertRating(rating);
 
-    // 分支一：新卡 —— 绝不能把 S=0 / D=0 代入老卡公式
+    // 逻辑流转：判断卡片是否为首次复习
     if (!state.isInitialized()) {
+      // 新卡分支：直接根据评分初始化 S 和 D
       const s = this.initStability(rating);
       const d = this.initDifficulty(rating);
       return new SchedulingInfo(
@@ -285,11 +315,11 @@ export class FsrsScheduler {
       );
     }
 
-    // 分支二：老卡
+    // 老卡分支：基于历史状态更新参数
     const r = this.retrievability(elapsedDays, state.stability);
     const d = this.nextDifficulty(state.difficulty, rating);
     const s = this.nextStability(state.difficulty, state.stability, r, rating, elapsedDays);
-    // 使用 Math.fround 对齐官方 fsrs crate (f32) 的存储精度，减少黄金向量比对时的累计误差
+    
     return new SchedulingInfo(
       new MemoryState(Math.fround(s), Math.fround(d)),
       Math.fround(this.nextInterval(s, desiredRetention)),
@@ -298,8 +328,8 @@ export class FsrsScheduler {
   }
 
   /**
-   * 便捷方法：直接算出下次复习间隔（天，向上取整，至少 1 天）。
-   * 同日复习（间隔 < 1 天）返回 0，由业务层决定是否进入当日队列。
+   * 业务级间隔计算：获取下次复习的天数（已取整）
+   * @returns 下次复习的整数天数，0 表示需在当日队列内处理
    */
   nextIntervalDays(state: MemoryState, elapsedDays: number, rating: number,
                    desiredRetention: number = DEFAULT_DESIRED_RETENTION): number {
@@ -309,8 +339,6 @@ export class FsrsScheduler {
     }
     return Math.round(info.interval);
   }
-
-  // ---------------- 工具 ----------------
 
   private assertRating(rating: number): void {
     if (rating !== 1 && rating !== 2 && rating !== 3 && rating !== 4) {
@@ -331,6 +359,7 @@ export class FsrsScheduler {
     }
     return Math.min(s, S_MAX);
   }
+}
 
   private clampRetention(r: number): number {
     // 留存率必须在 (0, 1) 开区间内，否则反解间隔会发散

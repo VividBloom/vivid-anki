@@ -9,13 +9,17 @@ import { LogUtil } from '../../common/utils/LogUtil';
 import { BreakpointConstants } from '../../common/constants/BreakpointConstants';
 
 /**
- * 内容管理页
+ * 内容管理页 (CardsPage)
  * 
- * 职责：
- *   1. 展现合集（项目）列表
- *   2. 提供全局要点搜索
- *   3. 处理空态与搜索无结果态
- * 禁语检查：已避开「牌组」、「卡片」、「字段」、「难度」等。
+ * 核心职责：
+ * 1. 结构化展示：以合集（Deck）为核心组织内容，展示要点总数与学习进度。
+ * 2. 高效搜索：提供全局实时搜索，支持基于搜索词的快速制卡闭环。
+ * 3. 生命周期管理：实现合集的创建、软删除（移入回收站）及要点的编辑入口。
+ * 4. 响应式布局：自适应 sm/md/lg 断点，动态调整 Grid 列数（1/2/3 列）。
+ * 
+ * 交互细节：
+ * - 长按触发二次确认弹窗，文案遵循「移入回收站」的正向引导原则。
+ * - 搜索无结果时，允许点击 Action 按钮快速以当前关键词创建新内容。
  */
 @Entry
 @Component
@@ -23,23 +27,32 @@ export struct CardsPage {
   private deckService: DeckService = new DeckService();
   private cardService: CardService = new CardService();
   
+  /** 数据状态：合集列表、搜索结果、关键字 */
   @State decks: DeckDTO[] = [];
   @State searchResults: CardDTO[] = [];
   @State searchKeyword: string = '';
+  
+  /** 页面四态控制 */
   @State isLoading: boolean = true;
   @State isError: boolean = false;
   @State errorMessage: string = '';
   @State isSearchMode: boolean = false;
+  
+  /** 新建合集暂存名 */
   @State newDeckName: string = '';
   
-  /** 当前断点 */
+  /** 响应式断点 */
   @StorageProp(BreakpointConstants.KEY_CURRENT_BREAKPOINT) currentBp: string = BreakpointConstants.BREAKPOINT_SM;
 
-  // 删除弹窗控制
+  /** 待删除项缓存，用于弹窗展示 */
   @State pendingDeleteDeck: DeckDTO | null = null;
   @State pendingDeleteCard: CardDTO | null = null;
 
-  deleteDeckDialog: CustomDialogController = new CustomDialogController({
+  /**
+   * 删除确认弹窗控制器
+   * 注意：aboutToDisappear 中需手动置空以预防 ArkUI 渲染树内存泄漏。
+   */
+  deleteDeckDialog: CustomDialogController | null = new CustomDialogController({
     builder: DeleteConfirmDialog({
       itemName: this.pendingDeleteDeck?.name || '',
       itemType: 'deck',
@@ -55,7 +68,7 @@ export struct CardsPage {
     customStyle: true
   });
 
-  deleteCardDialog: CustomDialogController = new CustomDialogController({
+  deleteCardDialog: CustomDialogController | null = new CustomDialogController({
     builder: DeleteConfirmDialog({
       itemName: this.pendingDeleteCard?.front || '',
       itemType: 'card',
@@ -72,6 +85,11 @@ export struct CardsPage {
 
   async aboutToAppear() {
     await this.refreshData();
+  }
+
+  aboutToDisappear() {
+    this.deleteDeckDialog = null;
+    this.deleteCardDialog = null;
   }
 
   private async refreshData() {
@@ -236,7 +254,7 @@ export struct CardsPage {
             LongPressGesture()
               .onAction(() => {
                 this.pendingDeleteDeck = deck;
-                this.deleteDeckDialog.open();
+                this.deleteDeckDialog?.open();
               })
           )
         }
@@ -287,7 +305,7 @@ export struct CardsPage {
               LongPressGesture()
                 .onAction(() => {
                   this.pendingDeleteCard = card;
-                  this.deleteCardDialog.open();
+                  this.deleteCardDialog?.open();
                 })
             )
           }

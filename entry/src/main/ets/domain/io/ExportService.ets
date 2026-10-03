@@ -23,16 +23,13 @@ export interface ExportOptions {
 }
 
 /**
- * 导出服务
+ * 数据导出服务
  * 
- * 职责：
- *   1. 导出 JSON 格式数据（全量备份）
- *   2. 导出 .apkg 格式数据（兼容 Anki 及本 App 再次导入）
- *   3. 导出埋点数据（离线分析用）
- * 
- * 术语：
- *   - UI 展示：「导出合集」
- *   - 内部：ExportService
+ * 核心职责：
+ * 1. 数据主权保障：提供 JSON、APKG、CSV 等多种格式导出，确保用户数据可自由迁移。
+ * 2. Anki 兼容：构建符合 Anki 规范的 SQLite 数据库结构（col, notes, cards, revlog），实现跨平台接续。
+ * 3. 埋点导出：支持导出本地统计数据，供用户进行深度记忆分析或争议排查。
+ * 4. 离线运行：所有处理逻辑均在本地沙箱完成，不依赖云端接口，确保隐私安全。
  */
 export class ExportService {
   private static readonly TAG = 'ExportService';
@@ -40,11 +37,12 @@ export class ExportService {
   private analyticsService = new AnalyticsService();
 
   /**
-   * 导出埋点数据为 JSON
+   * 导出埋点统计数据（用于数据审计与分析）
    * 
-   * @param ctx UI 上下文
-   * @param targetDir 目标目录
-   * @param options 导出选项
+   * @param ctx UIAbilityContext 上下文
+   * @param targetDir 目标存储目录（通常为用户选择的下载或备份路径）
+   * @param options 进度回调与取消控制
+   * @returns 成功返回导出的文件绝对路径
    */
   async exportAnalytics(ctx: common.UIAbilityContext, targetDir: string, options?: ExportOptions): Promise<Result<string>> {
     try {
@@ -71,11 +69,7 @@ export class ExportService {
   }
 
   /**
-   * 导出为 JSON 文件
-   * 
-   * @param ctx UI 上下文
-   * @param targetDir 目标目录
-   * @param options 导出选项
+   * 导出为全量备份 JSON（本项目专用格式）
    */
   async exportJson(ctx: common.UIAbilityContext, targetDir: string, options?: ExportOptions): Promise<Result<string>> {
     try {
@@ -113,11 +107,14 @@ export class ExportService {
   }
 
   /**
-   * 导出为 .apkg 文件
+   * 导出为 .apkg 格式（Anki 兼容包）
    * 
-   * @param ctx UI 上下文
-   * @param targetDir 目标目录
-   * @param options 导出选项
+   * 逻辑流程：
+   * 1. 环境准备：创建临时导出目录及外部数据库文件。
+   * 2. 结构构建：调用 initAnkiTables 创建 Anki 兼容的表结构。
+   * 3. 数据泵：从本地 RdbStore 提取合集、要点及复习记录，转换并写入外部数据库。
+   * 4. 媒体打包：将 card.media_refs 关联的物理文件重命名并拷贝至临时目录，生成 media 映射表。
+   * 5. 最终压缩：使用 zlib 将所有组件打包为单个 .apkg 文件。
    */
   async exportApkg(ctx: common.UIAbilityContext, targetDir: string, options?: ExportOptions): Promise<Result<string>> {
     const tempDir = `${ctx.tempDir}/anki_export_${TimeUtil.now()}`;

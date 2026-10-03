@@ -38,21 +38,36 @@ export class PurgeResult {
   }
 }
 
+/**
+ * 牌组与卡片生命周期服务层
+ * 
+ * 核心职责：处理合集（Deck）与要点（Card）的删除、恢复及自动清理逻辑。
+ * 设计准则：
+ * 1. 软删除策略：遵循 PRD 6.2 要求，所有删除操作仅标记 `deleted_at`，支持 30 天内恢复。
+ * 2. 事务一致性：批量操作（如删除合集）必须在事务中完成，确保数据完整性。
+ * 3. 统计解耦：删除/恢复后自动触发合集计数更新，确保 UI 层数据的实时准确。
+ */
 export class DeckLifecycleService {
   private store: relationalStore.RdbStore;
 
+  /**
+   * 构造函数
+   * @param store 注入 RdbStore 数据库实例
+   */
   constructor(store: relationalStore.RdbStore) {
     this.store = store;
   }
 
-  // ============================================================
-  // 删除
-  // ============================================================
-
   /**
-   * 软删单张卡片（用户主动删除）。
-   *
-   * 必须显式写 deleted_by_deck = 0：这样它在将来「恢复牌组」时不会被误恢复。
+   * 软删除单张卡片（要点）
+   * 
+   * 逻辑说明：
+   * 1. 设置 `deleted_at` 为当前时间戳。
+   * 2. 显式设置 `deleted_by_deck = 0`，标记为用户独立删除，而非随合集被动删除。
+   * 3. 触发所属合集的计数重算。
+   * 
+   * @param cardId 卡片唯一标识
+   * @param nowTs 当前时间戳，缺省为系统时间
    */
   async softDeleteCard(cardId: number, nowTs: number = TimeUtil.now()): Promise<void> {
     await this.store.executeSql(
@@ -67,16 +82,22 @@ export class DeckLifecycleService {
   }
 
   /**
-   * 软删整个牌组：牌组自身与其下所有卡片一并进入 30 天可恢复状态。
-   *
-   * 事务内完成，任一步失败整体回滚，不会出现「牌组没了但卡片还在」的中间态。
-   *
-   * @returns 被软删的卡片数（用于结果页文案，例如「已移到回收站，30 天内可恢复」）
+   * 软删除整个合集及其下属所有要点
+   * 
+   * 逻辑流程：
+   * 1. 开启数据库事务。
+   * 2. 统计当前合集内未删除的卡片总数。
+   * 3. 批量更新卡片：标记 `deleted_at` 并设置 `deleted_by_deck = 1`。
+   * 4. 更新合集：标记 `deleted_at` 并清空实时计数。
+   * 5. 提交事务。
+   * 
+   * @param deckId 合集唯一标识
+   * @param nowTs 当前时间戳
+   * @returns 被影响（移入回收站）的卡片总数
    */
   async softDeleteDeck(deckId: number, nowTs: number = TimeUtil.now()): Promise<number> {
     return await this.runInTransaction(async () => {
-      // 只软删尚未删除的卡片；已单独删除的卡片不改动，
-      // 避免把用户主动删除的记录也标成「随牌组删除」。
+      // 查询受影响的卡片数量，用于 UI 反馈
       const rs = await this.store.querySql(
         'SELECT COUNT(*) AS c FROM card WHERE deck_id = ? AND deleted_at IS NULL',
         [deckId] as Array<relationalStore.ValueType>
@@ -87,12 +108,14 @@ export class DeckLifecycleService {
       }
       rs.close();
 
+      // 级联标记卡片为“随合集删除”
       await this.store.executeSql(
         'UPDATE card SET deleted_at = ?, deleted_by_deck = 1, updated_at = ? ' +
         'WHERE deck_id = ? AND deleted_at IS NULL',
         [nowTs, nowTs, deckId] as Array<relationalStore.ValueType>
       );
 
+      // 标记合集本身已删除
       await this.store.executeSql(
         'UPDATE deck SET deleted_at = ?, card_count = 0, due_count = 0, updated_at = ? ' +
         'WHERE id = ? AND deleted_at IS NULL',
@@ -104,17 +127,17 @@ export class DeckLifecycleService {
     });
   }
 
-  // ============================================================
-  // 恢复
-  // ============================================================
-
   /**
-   * 恢复牌组。
-   *
-   * 只恢复 deleted_by_deck = 1 且 deleted_at 等于牌组删除时刻的卡片 ——
-   * 这两个条件缺一不可：
-   *   · deleted_by_deck=1 排除用户主动删除的卡片（那不该被牌组恢复捞回来）
-   *   · deleted_at 相等排除「恢复后又单独删除」的旧记录
+   * 从回收站恢复合集
+   * 
+   * 核心逻辑：
+   * 1. 校验合集状态：必须处于已删除状态。
+   * 2. 精确匹配恢复：仅恢复那些 `deleted_at` 与合集删除时间一致且标记为 `deleted_by_deck = 1` 的卡片。
+   * 3. 排除项：用户在合集删除前手动删除的卡片不会被恢复。
+   * 
+   * @param deckId 合集唯一标识
+   * @param nowTs 当前时间戳
+   * @returns 成功恢复的卡片数量
    */
   async restoreDeck(deckId: number, nowTs: number = TimeUtil.now()): Promise<number> {
     return await this.runInTransaction(async () => {
@@ -135,17 +158,20 @@ export class DeckLifecycleService {
       }
       rs.close();
 
+      // 恢复符合条件的卡片状态
       await this.store.executeSql(
         'UPDATE card SET deleted_at = NULL, deleted_by_deck = 0, updated_at = ? ' +
         'WHERE deck_id = ? AND deleted_at = ? AND deleted_by_deck = 1',
         [nowTs, deckId, deletedAt] as Array<relationalStore.ValueType>
       );
 
+      // 恢复合集状态
       await this.store.executeSql(
         'UPDATE deck SET deleted_at = NULL, updated_at = ? WHERE id = ?',
         [nowTs, deckId] as Array<relationalStore.ValueType>
       );
 
+      // 必须重新触发计数计算
       await this.recalcDeckCounts(deckId, nowTs);
       LogUtil.i('DeckLifecycle', '牌组 ' + deckId + ' 已恢复，卡片 ' + affected + ' 张');
       return affected;
@@ -153,19 +179,21 @@ export class DeckLifecycleService {
   }
 
   /**
-   * 彻底删除牌组。
+   * 物理删除合集（不可逆）
    * 
-   * 警告：此操作不可逆，会同时物理删除名下所有已删除的卡片。
+   * 安全红线：物理删除仅针对已在回收站中的条目。
+   * 逻辑：删除卡片记录 -> 删除合集记录。
+   * 注意：复习记录 (revlog) 由于无外键约束，将永久保留以支持 FSRS 算法。
+   * 
+   * @param deckId 合集唯一标识
    */
   async hardDeleteDeck(deckId: number): Promise<void> {
     await this.runInTransaction(async () => {
-      // 1. 删除所有已在回收站中的卡片
       await this.store.executeSql(
         'DELETE FROM card WHERE deck_id = ? AND deleted_at IS NOT NULL',
         [deckId] as Array<relationalStore.ValueType>
       );
       
-      // 2. 删除牌组本身
       await this.store.executeSql(
         'DELETE FROM deck WHERE id = ? AND deleted_at IS NOT NULL',
         [deckId] as Array<relationalStore.ValueType>
@@ -175,7 +203,9 @@ export class DeckLifecycleService {
     });
   }
 
-  /** 恢复单张卡片（不论来源） */
+  /**
+   * 从回收站恢复单张卡片
+   */
   async restoreCard(cardId: number, nowTs: number = TimeUtil.now()): Promise<void> {
     await this.store.executeSql(
       'UPDATE card SET deleted_at = NULL, deleted_by_deck = 0, updated_at = ? ' +
@@ -189,7 +219,7 @@ export class DeckLifecycleService {
   }
 
   /**
-   * 彻底删除单张卡片。
+   * 物理删除单张卡片
    */
   async hardDeleteCard(cardId: number): Promise<void> {
     await this.store.executeSql(
@@ -199,26 +229,24 @@ export class DeckLifecycleService {
     LogUtil.i('DeckLifecycle', '卡片 ' + cardId + ' 已彻底删除');
   }
 
-  // ============================================================
-  // 清理
-  // ============================================================
-
   /**
-   * 清理超过保留期的软删数据。建议启动时调用一次。
-   *
-   * 顺序不能颠倒：
-   *   1. 先硬删过期卡片（revlog 无外键，会完整保留，不影响 FSRS 训练）
-   *   2. 再硬删过期且「名下已无任何卡片」的牌组
-   *
-   * 第 2 步的 COUNT(*)=0 是硬约束：若牌组下还有未过期的软删卡片就删牌组，
-   * 那些卡片将来恢复时会失去归属，变成游离卡片。
+   * 自动清理过期数据
+   * 
+   * 运行机制：
+   * 1. 查找所有 `deleted_at` 早于截止时间（当前 - 30天）的记录。
+   * 2. 先硬删过期卡片。
+   * 3. 后硬删过期合集（前提是名下已无任何存活卡片）。
+   * 
+   * @param nowTs 参考时间戳
+   * @param retentionDays 保留天数，缺省为 30 天
+   * @returns 清理结果摘要
    */
   async purgeExpired(nowTs: number = TimeUtil.now(),
                      retentionDays: number = RETENTION_DAYS): Promise<PurgeResult> {
     const cutoff = nowTs - retentionDays * 24 * 60 * 60 * 1000;
 
     return await this.runInTransaction(async () => {
-      // 1) 过期卡片
+      // 步骤 1: 清理过期卡片
       const rs1 = await this.store.querySql(
         'SELECT COUNT(*) AS c FROM card WHERE deleted_at IS NOT NULL AND deleted_at < ?',
         [cutoff] as Array<relationalStore.ValueType>
@@ -234,7 +262,7 @@ export class DeckLifecycleService {
         [cutoff] as Array<relationalStore.ValueType>
       );
 
-      // 2) 过期牌组，且名下无任何卡片
+      // 步骤 2: 清理空过期合集
       const rs2 = await this.store.querySql(
         'SELECT COUNT(*) AS c FROM deck d ' +
         'WHERE d.deleted_at IS NOT NULL AND d.deleted_at < ? ' +
@@ -247,8 +275,6 @@ export class DeckLifecycleService {
       }
       rs2.close();
 
-      // 注意：SQLite 的 DELETE 不支持表别名（DELETE FROM deck d 会语法错误），
-      // 因此外层不加别名，相关子查询里直接用 deck.id 引用外层表。
       await this.store.executeSql(
         'DELETE FROM deck ' +
         'WHERE deleted_at IS NOT NULL AND deleted_at < ? ' +
@@ -263,16 +289,8 @@ export class DeckLifecycleService {
     });
   }
 
-  // ============================================================
-  // 内部工具
-  // ============================================================
-
   /**
-   * 重算牌组的冗余计数。
-   *
-   * 这里用 COUNT 是刻意的：删除 / 恢复是低频操作，
-   * 用 COUNT 重算比手动加减更不容易漂移。
-   * PRD 禁止的是「列表页每次渲染都 COUNT」，与本方法不冲突。
+   * 内部方法：重算合集的冗余计数（总卡片数、今日待复习数）
    */
   private async recalcDeckCounts(deckId: number, nowTs: number): Promise<void> {
     await this.store.executeSql(
@@ -317,6 +335,10 @@ export class DeckLifecycleService {
     return v;
   }
 
+  /**
+   * 事务执行包装器
+   * @param fn 需在事务中执行的异步函数
+   */
   private async runInTransaction<T>(fn: () => Promise<T>): Promise<T> {
     await this.store.beginTransaction();
     try {

@@ -22,10 +22,29 @@ const DB_NAME = 'memo.db';
 /** 每次结构变更 +1，与 user_settings.schema_version 保持一致 */
 const TARGET_VERSION = 1;
 
+/**
+ * 数据库辅助类 (DbHelper)
+ * 
+ * 核心职责：
+ * 1. 单例管理：持有全局唯一的 RdbStore 实例，确保数据库连接复用。
+ * 2. 生命周期维护：处理数据库的创建 (onCreate) 与版本升级 (onUpgrade)。
+ * 3. 安全与原子性：提供 inTransaction 封装，确保评分落盘、撤销、导入等核心操作的原子性。
+ * 4. 迁移保护：集成 MigrationManager，在执行版本升级前强制生成 pre_migration 快照，践行“升级不丢数据”的原则。
+ * 
+ * 架构约束：
+ * - 仅限 data 层与 domain 层调用。
+ * - 严禁在 doInit 中直接调用业务逻辑，避免循环依赖。
+ */
 export class DbHelper {
   private static store: relationalStore.RdbStore | null = null;
   private static initPromise: Promise<relationalStore.RdbStore> | null = null;
 
+  /**
+   * 获取数据库单例（线程安全）
+   * 
+   * @param ctx UIAbilityContext 上下文
+   * @returns Promise<relationalStore.RdbStore>
+   */
   static async getInstance(ctx: common.UIAbilityContext): Promise<relationalStore.RdbStore> {
     if (DbHelper.store) {
       return DbHelper.store;
@@ -37,6 +56,10 @@ export class DbHelper {
     return DbHelper.initPromise;
   }
 
+  /**
+   * 执行初始化流程
+   * 流程：打开连接 -> 设置 PRAGMA -> 版本检测 -> [创建表/执行迁移] -> 注入单例。
+   */
   private static async doInit(ctx: common.UIAbilityContext): Promise<relationalStore.RdbStore> {
     const config: relationalStore.StoreConfig = {
       name: DB_NAME,
@@ -112,7 +135,12 @@ export class DbHelper {
   }
 
   /**
-   * 事务封装。评分落盘、撤销、导入都必须走事务。
+   * 事务执行器
+   * 用于确保多表操作的原子性。评分落盘、数据恢复、彻底删除等关键逻辑必须通过此方法包裹。
+   * 
+   * @param store 数据库实例
+   * @param fn 待执行的异步业务逻辑
+   * @returns 业务逻辑的返回结果
    */
   static async inTransaction<T>(store: relationalStore.RdbStore,
                                 fn: () => Promise<T>): Promise<T> {

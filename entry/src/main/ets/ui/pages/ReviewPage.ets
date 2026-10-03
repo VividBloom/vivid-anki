@@ -16,12 +16,18 @@ import { media } from '@kit.MediaKit';
 import { BreakpointConstants } from '../../common/constants/BreakpointConstants';
 
 /**
- * 复习核心页
+ * 复习核心页 (ReviewPage)
  * 
- * 实现要求：
- *   全屏单卡，正面问题居中大字号
- *   点卡片翻面，背面显示答案 + 四档评分
- *   宽屏下限制卡片最大宽度
+ * 核心职责：
+ * 1. 沉浸式复习：实现单卡翻转逻辑（正面问题 -> 点击翻转 -> 背面答案）。
+ * 2. 算法闭环：集成 FSRS-6 评分逻辑，支持 Again/Hard/Good/Easy 四档实时反馈。
+ * 3. 容错保护：支持评分「撤销」操作，确保误触可快速恢复。
+ * 4. 会话接续：自动记录复习进度，支持应用退出后的断点续学。
+ * 5. 多模态交互：支持媒体文件（图片、音频）展示与播放，支持左撇子操作模式切换。
+ * 
+ * 视觉规范：
+ * - 宽屏下限制内容宽度为 600vp，确保长文阅读体验。
+ * - 评分栏在 sm 断点下为 2x2 布局，md/lg 下为 1x4 布局。
  */
 @Entry
 @Component
@@ -32,29 +38,42 @@ struct ReviewPage {
   private typeService: CardTypeService = new CardTypeService();
   private mediaService: MediaService = new MediaService();
   
+  /** 复习队列与当前进度索引 */
   @State queue: QueueCard[] = [];
   @State currentIndex: number = 0;
   @State currentCard: ReviewCard | null = null;
+  
+  /** 状态控制：是否已翻面、是否加载中 */
   @State isFlipped: boolean = false;
   @State isLoading: boolean = true;
   @State isError: boolean = false;
   @State errorMessage: string = '';
+  
+  /** 埋点与算法参数：开始时间、评分值 */
   @State startTime: number = 0;
   @State isLeftHanded: boolean = false;
   @State sessionId: string = '';
   @State deckId: number = 0;
+  
+  /** Snackbar 状态控制 */
   @State showUndoSnackbar: boolean = false;
   @State snackbarText: string = '';
   @State snackbarAction: string = '';
+  
+  /** 多媒体播放实例 */
   @State audioPlayer: media.AVPlayer | null = null;
   @State mediaDetails: Map<number, string> = new Map(); // id -> absPath
+  
   private snackbarTimer: number = 0;
   private lastRating: Rating | null = null;
   private lastDuration: number = 0;
 
-  /** 当前断点 */
+  /** 响应式断点 */
   @StorageProp(BreakpointConstants.KEY_CURRENT_BREAKPOINT) currentBp: string = BreakpointConstants.BREAKPOINT_SM;
 
+  /**
+   * 初始化复习会话：加载偏好、恢复进度、触发埋点
+   */
   async aboutToAppear(): Promise<void> {
     const ctx = getContext(this) as common.UIAbilityContext;
     const params = router.getParams() as Record<string, Object>;
@@ -119,7 +138,12 @@ struct ReviewPage {
 
   async aboutToDisappear() {
     if (this.audioPlayer) {
+      this.audioPlayer.off('stateChange');
       await this.audioPlayer.release();
+      this.audioPlayer = null;
+    }
+    if (this.snackbarTimer) {
+      clearTimeout(this.snackbarTimer);
     }
   }
 

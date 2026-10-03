@@ -24,14 +24,14 @@ export interface ImportOptions {
 /**
  * Anki 导入服务
  * 
- * 职责：
- *   1. 解析 .apkg 文件（Zip + SQLite + JSON）
- *   2. 映射 Anki 数据结构至本项目表结构
- *   3. 事务内批量导入 content
+ * 核心职责：
+ * 1. 文件解析：基于原生 zlib 和 relationalStore 解析 .apkg 压缩包及其内部的 SQLite 数据库。
+ * 2. 媒体管理：提取卡片中的媒体引用，并将物理文件拷贝至应用沙箱，同时维护引用计数。
+ * 3. 数据平滑：实现阶梯式分批调度算法，防止导入大量新要点时造成用户复习压力激增（淹没风险）。
+ * 4. 架构约束：所有数据库操作封装在事务中，严格遵守 UI -> Domain -> Data 的单向依赖。
  * 
- * 术语：
- *   - UI 展示：「导入合集」
- *   - 内部：ImportService / Anki Import
+ * 安全特性：
+ * - 路径安全：对解压后的文件名进行正则过滤，拦截 ../ 等路径控制字符，防御目录穿越攻击。
  */
 export class ImportService {
   private static readonly TAG = 'ImportService';
@@ -40,11 +40,12 @@ export class ImportService {
   private mediaDao = new MediaDao();
 
   /**
-   * 导入 .apkg 文件
+   * 导入 .apkg 文件（外部引流与数据迁移入口）
    * 
-   * @param ctx UI 上下文
-   * @param apkgPath .apkg 文件的完整路径
-   * @param options 导入选项
+   * @param ctx UIAbilityContext 上下文，用于获取沙箱目录
+   * @param apkgPath 待导入文件的绝对路径
+   * @param options 包含进度回调和取消信号的选项
+   * @returns 成功返回导入的卡片总数
    */
   async importApkg(ctx: common.UIAbilityContext, apkgPath: string, options?: ImportOptions): Promise<Result<number>> {
     const tempDir = `${ctx.tempDir}/anki_import_${TimeUtil.now()}`;
@@ -119,7 +120,15 @@ export class ImportService {
   }
 
   /**
-   * 核心导入逻辑
+   * 执行核心导入逻辑
+   * 包含合集映射、媒体拷贝、卡片分批调度及复习日志同步。
+   * 
+   * 逻辑流程：
+   * 1. 预校验：获取 Anki 数据库中卡片总数。
+   * 2. 映射合集：将 Anki 的 deck 定义转换为本地 deck 条目。
+   * 3. 媒体处理：解析 HTML 中的 <img> 和 [sound:] 标签，执行物理文件去重拷贝。
+   * 4. 阶梯调度：针对 'new' 状态卡片，根据每日新要点上限平摊 due 时间。
+   * 5. 日志同步：迁移复习历史，保留记忆曲线数据。
    */
   private async performImport(ctx: common.UIAbilityContext, ankiStore: relationalStore.RdbStore, tempDir: string, options?: ImportOptions): Promise<number> {
     const ourStore = await DbHelper.getInstance(ctx);
@@ -154,7 +163,12 @@ export class ImportService {
       const mediaMapping = this.fetchAnkiMediaMapping(tempDir);
       const reverseMediaMap = new Map<string, string>(); // OriginalName -> InternalName (digits)
       for (const key of Object.keys(mediaMapping)) {
-        reverseMediaMap.set(mediaMapping[key], key);
+        // 安全校验：防止 Zip Slip / 路径穿越攻击，确保 internalName 是安全的文件名
+        if (!key.includes('/') && !key.includes('\\') && !key.includes('..')) {
+          reverseMediaMap.set(mediaMapping[key], key);
+        } else {
+          LogUtil.w(ImportService.TAG, `跳过非法的媒体内部文件名: ${key}`);
+        }
       }
       const importedMediaCache = new Map<string, number>(); // OriginalName -> OurMediaId (去重)
 

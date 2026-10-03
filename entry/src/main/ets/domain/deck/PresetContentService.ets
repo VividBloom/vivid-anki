@@ -16,16 +16,20 @@ interface PresetDeck {
 }
 
 /**
- * 冷启动内容服务
+ * 冷启动内容服务层
  * 
- * 职责：
- *   1. 预置精品牌组及其内容
- *   2. 写入 card.source_ref 版本标记
- *   3. 确保首屏加载前完成必要的静默入库
+ * 核心职责：
+ * 1. 预置内容管理：定义并维护应用首次运行时的内置精选合集与要点。
+ * 2. 静默注入逻辑：在应用冷启动过程中，安全地将预置数据持久化到本地数据库。
+ * 3. 版本控制：通过 `source_ref` 记录内容版本，支持后续的内容静默升级与补丁分发。
  */
 export class PresetContentService {
   private static readonly TAG = 'PresetContentService';
 
+  /**
+   * 内置预置内容定义
+   * 包含：HarmonyOS 开发要点、FSRS 算法介绍、产品使用指南
+   */
   private static readonly CONTENT: PresetDeck[] = [
     {
       name: 'HarmonyOS 开发核心要点',
@@ -58,14 +62,23 @@ export class PresetContentService {
   ];
 
   /**
-   * 注入预置内容
+   * 执行内容注入任务
+   * 
+   * 业务逻辑流程：
+   * 1. 检查各预置合集是否已在数据库中（基于名称和 is_preset 标记）。
+   * 2. 若合集不存在，则开启事务进行完整注入。
+   * 3. 插入合集记录并获取主键 ID。
+   * 4. 批量插入关联的要点（Card），并标记来源为 'preset'。
+   * 5. 触发合集计数更新。
+   * 
+   * @param ctx UIAbilityContext 上下文，用于获取数据库实例
    */
   async injectPresetContent(ctx: common.UIAbilityContext): Promise<void> {
     const store = await DbHelper.getInstance(ctx);
     
     await DbHelper.inTransaction(store, async () => {
       for (const preset of PresetContentService.CONTENT) {
-        // 1. 检查合集是否已存在（通过名称和 is_preset 标识）
+        // 步骤 1：去重校验，防止重复注入
         const checkRs = await store.querySql(
           'SELECT id FROM deck WHERE name = ? AND is_preset = 1 LIMIT 1',
           [preset.name]
@@ -75,14 +88,13 @@ export class PresetContentService {
         if (checkRs.goToFirstRow()) {
           deckId = checkRs.getLong(0);
           checkRs.close();
-          // 如果已存在，暂时不重复插入要点
           continue; 
         }
         checkRs.close();
 
         LogUtil.i(PresetContentService.TAG, `正在注入预置合集: ${preset.name}`);
 
-        // 2. 插入合集
+        // 步骤 2：持久化合集元数据
         const now = TimeUtil.now();
         await store.executeSql(
           'INSERT INTO deck (name, is_preset, created_at, updated_at) VALUES (?, 1, ?, ?)',
@@ -98,7 +110,7 @@ export class PresetContentService {
         }
         idRs.close();
 
-        // 3. 插入要点
+        // 步骤 3：持久化下属要点
         for (const card of preset.cards) {
           await store.executeSql(
             `INSERT INTO card (deck_id, front, back, source, source_ref, state, due, created_at, updated_at) 
@@ -107,14 +119,17 @@ export class PresetContentService {
           );
         }
 
-        // 4. 更新合集计数
+        // 步骤 4：刷新合集计数统计
         await this.recalcDeckCounts(store, deckId, now);
       }
     });
   }
 
   /**
-   * 重算合集的冗余计数
+   * 内部方法：重算合集的冗余计数
+   * @param store RdbStore 实例
+   * @param deckId 合集 ID
+   * @param nowTs 当前时间戳
    */
   private async recalcDeckCounts(store: relationalStore.RdbStore, deckId: number, nowTs: number): Promise<void> {
     await store.executeSql(

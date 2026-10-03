@@ -1,16 +1,16 @@
 {
   "module": {
     "name": "entry",
-    "type": "entry",
+    "type": "entry", // 模块类型：entry 为主模块，feature 为特性模块，har/hsp 为库模块
     "description": "$string:module_desc",
     "mainElement": "EntryAbility",
     "deviceTypes": [
       "phone",
       "tablet"
     ],
-    "deliveryWithInstall": true,
-    "installationFree": false,
-    "pages": "$profile:main_pages",
+    "deliveryWithInstall": true, // 是否随应用安装
+    "installationFree": false, // 是否支持免安装（元服务特性）
+    "pages": "$profile:main_pages", // 页面路由配置文件引用
     "abilities": [
       {
         "name": "EntryAbility",
@@ -20,7 +20,7 @@
         "label": "$string:EntryAbility_label",
         "startWindowIcon": "$media:startIcon",
         "startWindowBackground": "$color:start_window_background",
-        "exported": true,
+        "exported": true, // 是否允许外部唤起
         "skills": [
           {
             "entities": [
@@ -35,7 +35,7 @@
     ],
     "extensionAbilities": [
       {
-        "name": "EntryFormAbility",
+        "name": "EntryFormAbility", // 桌面服务卡片 Ability
         "srcEntry": "./ets/form/EntryFormAbility.ets",
         "type": "form",
         "exported": true,
@@ -47,7 +47,7 @@
         ]
       },
       {
-        "name": "EntryBackupAbility",
+        "name": "EntryBackupAbility", // 应用备份与恢复 Ability
         "srcEntry": "./ets/entrybackupability/EntryBackupAbility.ets",
         "type": "backup",
         "exported": false,
@@ -61,7 +61,14 @@
     ],
     "requestPermissions": [
       {
-        "name": "ohos.permission.PUBLISH_AGENT_REMINDER"
+        "name": "ohos.permission.PUBLISH_AGENT_REMINDER", // 系统代理提醒权限，用于“温和提醒”功能
+        "reason": "$string:reminder_reason", // 权限使用原因（需在资源文件中定义）
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when": "always"
+        }
       }
     ]
   }

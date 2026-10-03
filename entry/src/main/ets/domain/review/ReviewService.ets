@@ -53,19 +53,20 @@ export interface HomeData {
 }
 
 /**
- * 复习业务服务
+ * 复习业务服务 (ReviewService)
  * 
- * 职责：
- *   1. 对接数据层获取复习候选集
- *   2. 调用调度层构建今日队列
- *   3. 为 UI 提供汇总数据
- *   4. 处理评分落盘与统计更新
+ * 核心职责：
+ * 1. 队列调度：根据用户设置（新要点上限）与卡片到期时间，调用 ReviewQueue 构建今日复习序列。
+ * 2. 评分落盘：封装评分逻辑，在单次事务中完成卡片状态更新、复习日志写入及每日统计累加。
+ * 3. 桌面集成：复习完成后触发桌面服务卡片（Widget）的异步刷新，确保多端进度一致。
+ * 4. 统计聚合：为首页提供包括连续天数、未来 7 天预测在内的全量聚合数据。
  */
 export class ReviewService {
   private static readonly TAG = 'ReviewService';
 
   /**
-   * 获取今日复习摘要（总数与预计耗时）
+   * 获取今日复习摘要
+   * 包含待复习要点列表、新要点数及预计复习时长。
    */
   async getTodaySummary(ctx: common.UIAbilityContext): Promise<QueueResult> {
     try {

@@ -1,18 +1,17 @@
 import { LogUtil } from './LogUtil';
 
 /**
- * 埋点统计工具 (V1.0 本地版)
+ * 埋点统计工具类 (Analytics)
  * 
- * 职责：
- *   1. 定义全量 22 个埋点事件常量（PRD 第十一章一致）
- *   2. 提供统一的埋点触发入口
- *   3. 维持架构分层，通过 delegate 模式解耦持久化逻辑
- * 
- * 分层约束：
- *   属于 common 层，不得引用 data/domain/ui。
+ * 核心职责：
+ * 1. 事件标准化：定义了涵盖激活漏斗、核心行为、留存流失在内的 22 个标准业务事件。
+ * 2. 架构解耦：采用 Delegate（委托）模式，允许 common 层在不直接依赖 data 层的情况下实现埋点持久化，解决了分层架构中的循环依赖问题。
+ * 3. 离线记录：所有事件首先落盘至本地 analytics_event 表，确保在无网环境下也能精准记录用户行为。
  */
 export class Analytics {
-  // --- 激活漏斗 (Activation Funnel) - 8 个 ---
+  // --- 激活漏斗 (Activation Funnel) ---
+  // 用于分析新用户从下载到完成首次核心交互（制卡/复习）的转化率。
+  
   /** 应用首次冷启动 */
   static readonly EVENT_APP_LAUNCH = 'app_launch';
   /** 进入新手引导流程 */

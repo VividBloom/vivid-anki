@@ -1,15 +1,17 @@
 /**
- * 建表语句
- *
- * 【重要】本文件与 docs/V1__init.sql 是同一份内容的两种形态：
- *   - 本文件：给代码执行用，按表拆分成数组，便于逐条执行与错误定位
- *   - docs/V1__init.sql：给人看 / 给评审看，含完整注释
- *   改一处必须改另一处。
- *
- * 表清单对应 PRD 6.2 - 6.11，共 10 张表。
+ * 数据库 Schema 定义
+ * 
+ * 核心设计原则：
+ * 1. 软删除支持：核心业务表（card, deck）均包含 deleted_at 字段，支持 30 天回收站恢复逻辑。
+ * 2. 逻辑关联：在 card 与 revlog 表中刻意不使用物理外键，通过逻辑关联支持“删合集留卡片”及“删卡片留复习记录”的审计需求。
+ * 3. 统计冗余：daily_stats 表用于缓存每日复习数据，实现统计页面的“秒开”性能红线。
+ * 4. 索引优化：针对复习队列（idx_card_due）、埋点查询（idx_analytics_created）等高频场景配置了专属索引。
  */
 
-/** 每张表一条，executeSql 不支持一次多语句，因此必须拆开 */
+/** 
+ * 全量建表 SQL 数组
+ * executeSql 不支持一次执行多条语句，因此在此按表拆分。
+ */
 export const CREATE_TABLES: string[] = [
   // 6.4 deck
   `CREATE TABLE IF NOT EXISTS deck (

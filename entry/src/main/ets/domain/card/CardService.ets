@@ -22,11 +22,13 @@ export interface CardDTO {
 }
 
 /**
- * 记忆要点业务服务
+ * 记忆要点业务服务 (CardService)
  * 
- * 职责：
- *   1. 处理要点的创建逻辑（含默认项目维护）
- *   2. 处理复杂制卡逻辑（Cloze、反向卡等）
+ * 核心职责：
+ * 1. 制卡管理：处理手动创建与 AI 批量生成的入库逻辑，支持基础卡、填空卡等多种类型。
+ * 2. 合集维护：确保每张卡片都归属于合集，并在无指定时自动创建/维护「默认合集」。
+ * 3. 媒体同步：处理卡片内容与物理媒体文件（图片/音频）的关联引用，维护 Media 数据库记录。
+ * 4. 冗余同步：入库后自动触发合集计数（card_count, due_count）的重算，确保首页秒开性能。
  */
 export class CardService {
   private cardDao = new CardDao();
@@ -34,12 +36,13 @@ export class CardService {
   private mediaService = new MediaService();
 
   /**
-   * 创建新要点
+   * 创建单张记忆要点
    * 
-   * @param ctx UI 上下文
-   * @param front 正面内容
-   * @param back 背面内容
-   * @param options 附加选项（项目ID、类型、补充说明等）
+   * @param ctx UIAbilityContext 上下文
+   * @param front 正面内容（支持 HTML）
+   * @param back 背面内容（支持 HTML）
+   * @param options 包含合集ID、卡片类型及媒体引用的附加选项
+   * @returns 成功返回新创建的 cardId
    */
   async createCard(ctx: common.UIAbilityContext, front: string, back: string, options?: {
     deckId?: number,

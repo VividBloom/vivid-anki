@@ -5,20 +5,26 @@ import { TimeUtil } from '../../common/utils/TimeUtil';
 import { BackupManager } from '../db/BackupManager';
 
 /**
- * 数据库迁移管理器
+ * 数据库迁移管理器 (MigrationManager)
  * 
- * 职责：
- *   1. 升级前的强制备份（pre_migration）
- *   2. 执行版本迁移脚本（ALTER TABLE 等）
+ * 核心职责：
+ * 1. 结构变更维护：负责执行 SQL 迁移脚本（如 ALTER TABLE），支持数据库 Schema 的平滑升级。
+ * 2. 升级安全兜底：在执行任何结构变更前，强制调用 BackupManager 生成 pre_migration 类型的快照。
+ * 3. 步进式迁移：采用 step-by-step 模式（如 v1->v2, v2->v3），确保迁移逻辑的清晰与可追溯性。
  * 
- * 红线：升级失败必须阻断，确保用户数据不丢失。
+ * 红线约束：
+ * - 迁移前备份失败必须抛出异常并阻断初始化，严禁带病升级。
+ * - 迁移逻辑仅限 data 层内部调用，严禁反向依赖 domain 层。
  */
 export class MigrationManager {
   private static readonly TAG = 'MigrationManager';
 
   /**
-   * 迁移前备份
-   * 失败时抛出异常，由 DbHelper 捕获并阻断初始化流程。
+   * 迁移前强制备份
+   * 
+   * @param ctx UIAbilityContext 上下文
+   * @param store 数据库实例
+   * @param from 当前版本号
    */
   static async backupPreMigration(ctx: common.UIAbilityContext, store: relationalStore.RdbStore, from: number): Promise<void> {
     const backupName = `memo_v${from}_pre_migration_${TimeUtil.now()}.db`;

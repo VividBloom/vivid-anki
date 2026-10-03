@@ -21,14 +21,18 @@ import { Analytics } from '../../common/utils/Analytics';
 import { LogUtil } from '../../common/utils/LogUtil';
 import { PresetContentService } from '../deck/PresetContentService';
 
+/**
+ * 启动期维护任务 (StartupTasks)
+ * 
+ * 核心职责：
+ * 1. 任务调度：统一管理应用启动时需执行的非阻塞维护动作，如注入预置内容、清理回收站、同步提醒等。
+ * 2. 架构解耦：作为 domain 层的入口，负责调用各子服务，解决 data 层无法反向引用 domain 层逻辑的问题。
+ * 3. 鲁棒性保障：执行「不阻塞、单项隔离、静默重试」策略，确保维护任务不影响用户首屏体验。
+ */
 export class StartupTasks {
   /**
-   * 执行全部启动任务。
-   *
-   * 三条约束：
-   *   1. 不阻塞首屏 —— 调用方不应 await 本方法
-   *   2. 单项失败不影响其他项 —— 各自 try/catch
-   *   3. 失败不弹错 —— 维护动作失败只意味着这次没做，下次启动会重试
+   * 执行全量启动维护任务
+   * 注意：在 EntryAbility 中调用时不应使用 await，以防阻塞应用冷启动。
    */
   static async runAll(ctx: common.UIAbilityContext): Promise<void> {
     await StartupTasks.initAnalytics(ctx);

@@ -10,10 +10,14 @@ import { LogUtil } from '../../common/utils/LogUtil';
 import { BreakpointConstants } from '../../common/constants/BreakpointConstants';
 
 /**
- * 首页：今日任务概览
+ * 首页：今日进度与概览 (TodayPage)
  * 
- * 职责：展示核心进度、学习状态与未来预告。
- * 禁语检查：已避开「牌组」、「卡片」、「逾期」、「积压」、「错误率」等负面词汇。
+ * 核心职责：
+ * 1. 任务直达：通过「Hero Card」引导用户开始今日复习，展示预计耗时。
+ * 2. 状态反馈：展示连续学习天数（火苗）与今日成果热力图，提供正向激励。
+ * 3. 预警预告：展示未来 7 天的复习量预测，帮助用户合理分配时间。
+ * 4. 响应式布局：基于 SideBarContainer 实现 lg 断点下的双栏布局（左导航+右内容）。
+ * 5. 断卡回归：集成 ReturnService，自动检测并引导中断用户进入「热身模式」。
  */
 @Component
 export struct TodayPage {
@@ -22,6 +26,7 @@ export struct TodayPage {
   private returnService: ReturnService = new ReturnService();
   private deckService: DeckService = new DeckService();
   
+  /** 首页聚合数据：包含摘要、火苗天数、预测图表等 */
   @State homeData: HomeData = {
     summary: {
       cards: [],
@@ -34,20 +39,28 @@ export struct TodayPage {
     todayDone: 0
   };
 
+  /** 全量合集列表，用于侧边栏导航 */
   @State decks: DeckDTO[] = [];
   
+  /** 页面状态管理：加载、错误及对应文案 */
   @State isLoading: boolean = true;
   @State isError: boolean = false;
   @State errorMessage: string = '';
 
-  /** 当前断点 */
+  /** 响应式断点状态，由 AppStorage 自动注入 */
   @StorageProp(BreakpointConstants.KEY_CURRENT_BREAKPOINT) currentBp: string = BreakpointConstants.BREAKPOINT_SM;
 
+  /**
+   * 页面初始化：加载核心数据并检查回归状态
+   */
   async aboutToAppear(): Promise<void> {
     const ctx = getContext(this) as common.UIAbilityContext;
     await this.refreshData(ctx);
   }
 
+  /**
+   * 刷新首页数据：支持回归检测、活跃会话检测及并行数据获取
+   */
   private async refreshData(ctx: common.UIAbilityContext) {
     this.isLoading = true;
     this.isError = false;

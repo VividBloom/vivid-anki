@@ -22,7 +22,7 @@ struct CardEditPage {
   @State isSaving: boolean = false;
 
   // 删除弹窗控制
-  deleteCardDialog: CustomDialogController = new CustomDialogController({
+  deleteCardDialog: CustomDialogController | null = new CustomDialogController({
     builder: DeleteConfirmDialog({
       itemName: this.frontText,
       itemType: 'card',
@@ -47,6 +47,10 @@ struct CardEditPage {
       promptAction.showToast({ message: '数据加载异常' });
       router.back();
     }
+  }
+
+  aboutToDisappear() {
+    this.deleteCardDialog = null;
   }
 
   private async handleSave() {
@@ -120,7 +124,7 @@ struct CardEditPage {
             .borderRadius(25)
             .margin({ top: 60, bottom: 40 })
             .onClick(() => {
-              this.deleteCardDialog.open();
+              this.deleteCardDialog?.open();
             })
         }
         .padding(16)
