@@ -6,6 +6,7 @@ import { StateView } from '../components/StateView';
 import { SkeletonList } from '../components/Skeleton';
 import { DeleteConfirmDialog } from '../components/DeleteConfirmDialog';
 import { LogUtil } from '../../common/utils/LogUtil';
+import { BreakpointConstants } from '../../common/constants/BreakpointConstants';
 
 /**
  * 内容管理页
@@ -31,6 +32,9 @@ export struct CardsPage {
   @State isSearchMode: boolean = false;
   @State newDeckName: string = '';
   
+  /** 当前断点 */
+  @StorageProp(BreakpointConstants.KEY_CURRENT_BREAKPOINT) currentBp: string = BreakpointConstants.BREAKPOINT_SM;
+
   // 删除弹窗控制
   @State pendingDeleteDeck: DeckDTO | null = null;
   @State pendingDeleteCard: CardDTO | null = null;
@@ -199,9 +203,9 @@ export struct CardsPage {
 
   @Builder
   DeckListView() {
-    List({ space: 12 }) {
+    Grid() {
       ForEach(this.decks, (deck: DeckDTO) => {
-        ListItem() {
+        GridItem() {
           Row() {
             Column() {
               Text(deck.name)
@@ -226,7 +230,6 @@ export struct CardsPage {
           .backgroundColor($r('app.color.card_background'))
           .borderRadius(12)
           .onClick(() => {
-            // 跳转到合集详情（待开发）
             promptAction.showToast({ message: '合集详情功能即将上线' });
           })
           .gesture(
@@ -239,6 +242,10 @@ export struct CardsPage {
         }
       }, (deck: DeckDTO) => deck.id.toString())
     }
+    .columnsTemplate(this.currentBp === BreakpointConstants.BREAKPOINT_SM ? '1fr' : 
+      (this.currentBp === BreakpointConstants.BREAKPOINT_MD ? '1fr 1fr' : '1fr 1fr 1fr'))
+    .columnsGap(12)
+    .rowsGap(12)
     .padding({ left: 16, right: 16, bottom: 100 })
     .layoutWeight(1)
   }
@@ -248,9 +255,9 @@ export struct CardsPage {
     if (this.searchResults.length === 0) {
       this.NoResultView()
     } else {
-      List({ space: 12 }) {
+      Grid() {
         ForEach(this.searchResults, (card: CardDTO) => {
-          ListItem() {
+          GridItem() {
             Column() {
               Text(card.front)
                 .fontSize(16)
@@ -271,7 +278,6 @@ export struct CardsPage {
             .borderRadius(12)
             .alignItems(HorizontalAlign.Start)
             .onClick(() => {
-              // 跳转到要点编辑
               router.pushUrl({
                 url: 'ui/pages/CardEditPage',
                 params: { card: card }
@@ -287,6 +293,10 @@ export struct CardsPage {
           }
         }, (card: CardDTO) => card.id.toString())
       }
+      .columnsTemplate(this.currentBp === BreakpointConstants.BREAKPOINT_SM ? '1fr' : 
+        (this.currentBp === BreakpointConstants.BREAKPOINT_MD ? '1fr 1fr' : '1fr 1fr 1fr'))
+      .columnsGap(12)
+      .rowsGap(12)
       .padding({ left: 16, right: 16, bottom: 100 })
       .layoutWeight(1)
     }

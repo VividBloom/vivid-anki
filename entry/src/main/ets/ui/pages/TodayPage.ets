@@ -3,9 +3,11 @@ import { router, promptAction } from '@kit.ArkUI';
 import { ReviewService, HomeData } from '../../domain/review/ReviewService';
 import { ResumeService } from '../../domain/session/ResumeService';
 import { ReturnService } from '../../domain/review/ReturnService';
+import { DeckService, DeckDTO } from '../../domain/deck/DeckService';
 import { StateView } from '../components/StateView';
 import { SkeletonCard, SkeletonText } from '../components/Skeleton';
 import { LogUtil } from '../../common/utils/LogUtil';
+import { BreakpointConstants } from '../../common/constants/BreakpointConstants';
 
 /**
  * 首页：今日任务概览
@@ -18,6 +20,7 @@ export struct TodayPage {
   private reviewService: ReviewService = new ReviewService();
   private resumeService: ResumeService = new ResumeService();
   private returnService: ReturnService = new ReturnService();
+  private deckService: DeckService = new DeckService();
   
   @State homeData: HomeData = {
     summary: {
@@ -30,10 +33,15 @@ export struct TodayPage {
     forecast: [0, 0, 0, 0, 0, 0, 0],
     todayDone: 0
   };
+
+  @State decks: DeckDTO[] = [];
   
   @State isLoading: boolean = true;
   @State isError: boolean = false;
   @State errorMessage: string = '';
+
+  /** 当前断点 */
+  @StorageProp(BreakpointConstants.KEY_CURRENT_BREAKPOINT) currentBp: string = BreakpointConstants.BREAKPOINT_SM;
 
   async aboutToAppear(): Promise<void> {
     const ctx = getContext(this) as common.UIAbilityContext;
@@ -51,7 +59,14 @@ export struct TodayPage {
         return;
       }
 
-      this.homeData = await this.reviewService.getHomeData(ctx);
+      // 并行获取首页数据和合集列表
+      const [homeData, decks] = await Promise.all([
+        this.reviewService.getHomeData(ctx),
+        this.deckService.getDecks(ctx)
+      ]);
+      
+      this.homeData = homeData;
+      this.decks = decks;
       
       // 检测活跃会话
       const activeSession = await this.resumeService.checkActiveSession(ctx);
@@ -92,76 +107,148 @@ export struct TodayPage {
   }
 
   build() {
-    Stack({ alignContent: Alignment.BottomEnd }) {
-      Scroll() {
-        Column() {
-          // 顶部标题
-          Row() {
-            Text('瞄一眼')
-              .fontSize(24)
-              .fontWeight(FontWeight.Bold)
-              .fontColor($r('app.color.text_primary'))
-            Blank()
-            Image($r('app.media.ic_public_settings'))
-              .width(24)
-              .height(24)
-              .fillColor($r('app.color.text_primary'))
-              .onClick(() => {
-                router.pushUrl({ url: 'ui/pages/SettingsPage' });
+    SideBarContainer(SideBarContainerType.Embed) {
+      // 左侧：合集导航 (仅在 lg 断点显示)
+      this.SideBarContent()
+
+      // 右侧：主内容区域
+      Stack({ alignContent: Alignment.BottomEnd }) {
+        Scroll() {
+          Column() {
+            // 顶部标题
+            Row() {
+              Text('瞄一眼')
+                .fontSize(24)
+                .fontWeight(FontWeight.Bold)
+                .fontColor($r('app.color.text_primary'))
+              Blank()
+              Image($r('app.media.ic_public_settings'))
+                .width(24)
+                .height(24)
+                .fillColor($r('app.color.text_primary'))
+                .onClick(() => {
+                  router.pushUrl({ url: 'ui/pages/SettingsPage' });
+                })
+            }
+            .width('100%')
+            .minHeight(56)
+            .padding({ left: 20, right: 20, top: 20, bottom: 20 })
+
+            if (this.isLoading) {
+              this.SkeletonView()
+            } else if (this.isError) {
+              StateView({
+                type: 'error',
+                title: '加载失败',
+                message: this.errorMessage,
+                onAction: () => {
+                  const ctx = getContext(this) as common.UIAbilityContext;
+                  this.refreshData(ctx);
+                }
               })
+            } else {
+              // 主卡片区域 (Hero Card)
+              this.HeroCard()
+
+              // 统计数据 (Streak & Heatmap)
+              this.StatsSection()
+
+              // 未来预告 (Forecast)
+              this.ForecastSection()
+            }
           }
           .width('100%')
-          .minHeight(56)
-          .padding({ left: 20, right: 20, top: 20, bottom: 20 })
-
-          if (this.isLoading) {
-            this.SkeletonView()
-          } else if (this.isError) {
-            StateView({
-              type: 'error',
-              title: '加载失败',
-              message: this.errorMessage,
-              onAction: () => {
-                const ctx = getContext(this) as common.UIAbilityContext;
-                this.refreshData(ctx);
-              }
-            })
-          } else {
-            // 主卡片区域 (Hero Card)
-            this.HeroCard()
-
-            // 统计数据 (Streak & Heatmap)
-            this.StatsSection()
-
-            // 未来预告 (Forecast)
-            this.ForecastSection()
-          }
+          .alignItems(HorizontalAlign.Center)
         }
-        .width('100%')
-        .alignItems(HorizontalAlign.Center)
-      }
-      .height('100%')
-      .backgroundColor($r('app.color.page_background'))
+        .height('100%')
+        .backgroundColor($r('app.color.page_background'))
 
-      // 悬浮添加按钮 (快速制卡)
-      Button({ type: ButtonType.Circle }) {
-        Image($r('app.media.ic_public_add'))
-          .width(24)
-          .height(24)
-          .fillColor(Color.White)
+        // 悬浮添加按钮 (快速制卡)
+        Button({ type: ButtonType.Circle }) {
+          Image($r('app.media.ic_public_add'))
+            .width(24)
+            .height(24)
+            .fillColor(Color.White)
+        }
+        .width(56)
+        .height(56)
+        .margin({ right: 24, bottom: 24 })
+        .backgroundColor($r('app.color.primary_color'))
+        .shadow({ radius: 10, color: '#33007DFF', offsetX: 0, offsetY: 5 })
+        .onClick(() => {
+          router.pushUrl({ url: 'ui/pages/CreateCardPage' });
+        })
       }
-      .width(56)
-      .height(56)
-      .margin({ right: 24, bottom: 24 })
-      .backgroundColor($r('app.color.primary_color'))
-      .shadow({ radius: 10, color: '#33007DFF', offsetX: 0, offsetY: 5 })
+      .width('100%')
+      .height('100%')
+    }
+    .showSideBar(this.currentBp === BreakpointConstants.BREAKPOINT_LG)
+    .sideBarWidth(240)
+    .minSideBarWidth(200)
+    .maxSideBarWidth(300)
+    .showControlButton(false) // 宽屏下固定展示，不显示控制按钮
+  }
+
+  @Builder
+  SideBarContent() {
+    Column() {
+      Text('合集')
+        .fontSize(20)
+        .fontWeight(FontWeight.Bold)
+        .fontColor($r('app.color.text_primary'))
+        .margin({ top: 40, bottom: 20, left: 24 })
+        .width('100%')
+
+      List({ space: 8 }) {
+        ForEach(this.decks, (deck: DeckDTO) => {
+          ListItem() {
+            Row() {
+              Text(deck.name)
+                .fontSize(16)
+                .fontColor($r('app.color.text_primary'))
+                .layoutWeight(1)
+              
+              if (deck.dueCount > 0) {
+                Text(deck.dueCount.toString())
+                  .fontSize(12)
+                  .fontColor(Color.White)
+                  .backgroundColor($r('app.color.primary_color'))
+                  .padding({ left: 8, right: 8, top: 2, bottom: 2 })
+                  .borderRadius(10)
+              }
+            }
+            .width('100%')
+            .padding({ left: 24, right: 24, top: 12, bottom: 12 })
+            .onClick(() => {
+              // TODO: 导航到合集详情或开始该合集的复习
+              promptAction.showToast({ message: `进入合集：${deck.name}` });
+            })
+          }
+        })
+      }
+      .width('100%')
+      .layoutWeight(1)
+      
+      // 管理入口
+      Row() {
+        Image($r('app.media.ic_public_view_list'))
+          .width(20)
+          .height(20)
+          .margin({ right: 12 })
+        Text('全部合集')
+          .fontSize(14)
+          .fontColor($r('app.color.text_secondary'))
+      }
+      .width('100%')
+      .padding(24)
       .onClick(() => {
-        router.pushUrl({ url: 'ui/pages/CreateCardPage' });
+        router.pushUrl({ url: 'ui/pages/CardsPage' });
       })
     }
     .width('100%')
     .height('100%')
-    .backgroundColor($r('app.color.page_background'))
+    .backgroundColor($r('app.color.card_background'))
+    .border({ width: { right: 1 }, color: $r('app.color.divider_color') })
   }
 
   @Builder

@@ -1,6 +1,7 @@
 import { common } from '@kit.AbilityKit';
 import { router } from '@kit.ArkUI';
 import { ReviewService, CompletionSummary } from '../../domain/review/ReviewService';
+import { BreakpointConstants } from '../../common/constants/BreakpointConstants';
 
 /**
  * 复习完成收尾页
@@ -20,6 +21,9 @@ struct DonePage {
   };
   
   @State isLoading: boolean = true;
+
+  /** 当前断点 */
+  @StorageProp(BreakpointConstants.KEY_CURRENT_BREAKPOINT) currentBp: string = BreakpointConstants.BREAKPOINT_SM;
 
   async aboutToAppear(): Promise<void> {
     const ctx = getContext(this) as common.UIAbilityContext;
@@ -57,7 +61,8 @@ struct DonePage {
         this.StatItem('连续天数', this.summary.streakDays.toString())
         this.StatItem('明日预告', this.summary.tomorrowCount.toString())
       }
-      .width('90%')
+      .width(this.currentBp === BreakpointConstants.BREAKPOINT_SM ? '90%' : '60%')
+      .constraintSize({ maxWidth: 600 })
       .justifyContent(FlexAlign.SpaceAround)
       .backgroundColor($r('app.color.card_background'))
       .borderRadius(20)
@@ -68,7 +73,8 @@ struct DonePage {
 
       // 底部收尾按钮
       Button('完成')
-        .width('80%')
+        .width(this.currentBp === BreakpointConstants.BREAKPOINT_SM ? '80%' : '40%')
+        .constraintSize({ maxWidth: 400 })
         .minHeight(50)
         .fontSize(18)
         .fontWeight(FontWeight.Medium)

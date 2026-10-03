@@ -1,8 +1,9 @@
 import { AbilityConstant, ConfigurationConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { window } from '@kit.ArkUI';
+import { window, display } from '@kit.ArkUI';
 import { StartupTasks } from '../domain/maintenance/StartupTasks';
 import { Analytics } from '../common/utils/Analytics';
+import { BreakpointConstants } from '../common/constants/BreakpointConstants';
 
 const DOMAIN = 0x0000;
 
@@ -55,6 +56,16 @@ export default class EntryAbility extends UIAbility {
       AppStorage.setOrCreate('targetPage', this.targetPage);
     }
 
+    const mainWindow = windowStage.getMainWindowSync();
+    
+    // 初始化断点与尺寸
+    this.updateBreakpoint(mainWindow);
+
+    // 注册尺寸变化监听
+    mainWindow.on('windowSizeChange', (size) => {
+      this.updateBreakpoint(mainWindow);
+    });
+
     windowStage.loadContent('pages/Index', (err) => {
       if (err.code) {
         hilog.error(DOMAIN, 'testTag', 'Failed to load the content. Cause: %{public}s', JSON.stringify(err));
@@ -62,6 +73,31 @@ export default class EntryAbility extends UIAbility {
       }
       hilog.info(DOMAIN, 'testTag', 'Succeeded in loading the content.');
     });
+  }
+
+  private updateBreakpoint(mainWindow: window.Window): void {
+    const properties = mainWindow.getWindowProperties();
+    const widthPx = properties.windowRect.width;
+    const heightPx = properties.windowRect.height;
+    
+    // 转换为 vp
+    const density = display.getDefaultDisplaySync().densityPixels;
+    const widthVp = widthPx / density;
+    const heightVp = heightPx / density;
+
+    let bp: string = BreakpointConstants.BREAKPOINT_SM;
+    if (widthVp >= BreakpointConstants.RANGE_LG) {
+      bp = BreakpointConstants.BREAKPOINT_LG;
+    } else if (widthVp >= BreakpointConstants.RANGE_MD) {
+      bp = BreakpointConstants.BREAKPOINT_MD;
+    }
+
+    AppStorage.setOrCreate(BreakpointConstants.KEY_CURRENT_BREAKPOINT, bp);
+    AppStorage.setOrCreate(BreakpointConstants.KEY_WINDOW_WIDTH, widthVp);
+    AppStorage.setOrCreate(BreakpointConstants.KEY_WINDOW_HEIGHT, heightVp);
+    
+    hilog.info(DOMAIN, 'EntryAbility', 'Window size updated: %{public}d x %{public}d (vp), BP: %{public}s', 
+      widthVp, heightVp, bp);
   }
 
   onWindowStageDestroy(): void {

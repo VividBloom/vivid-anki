@@ -13,6 +13,7 @@ import { StateView } from '../components/StateView';
 import { SkeletonCard, SkeletonText } from '../components/Skeleton';
 import { LogUtil } from '../../common/utils/LogUtil';
 import { media } from '@kit.MediaKit';
+import { BreakpointConstants } from '../../common/constants/BreakpointConstants';
 
 /**
  * 复习核心页
@@ -20,7 +21,7 @@ import { media } from '@kit.MediaKit';
  * 实现要求：
  *   全屏单卡，正面问题居中大字号
  *   点卡片翻面，背面显示答案 + 四档评分
- *   顶部进度条文字：「还剩 N 张」
+ *   宽屏下限制卡片最大宽度
  */
 @Entry
 @Component
@@ -50,6 +51,9 @@ struct ReviewPage {
   private snackbarTimer: number = 0;
   private lastRating: Rating | null = null;
   private lastDuration: number = 0;
+
+  /** 当前断点 */
+  @StorageProp(BreakpointConstants.KEY_CURRENT_BREAKPOINT) currentBp: string = BreakpointConstants.BREAKPOINT_SM;
 
   async aboutToAppear(): Promise<void> {
     const ctx = getContext(this) as common.UIAbilityContext;
@@ -346,6 +350,8 @@ struct ReviewPage {
           .width('100%')
           .minHeight(56)
           .padding(16)
+          .constraintSize({ maxWidth: 800 }) // 顶部栏也限制宽度
+          .alignSelf(ItemAlign.Center)
         }
 
         // 内容展示区域
@@ -356,7 +362,7 @@ struct ReviewPage {
               Scroll() {
                 Column() {
                   Text(this.typeService.getRenderedContent(this.currentCard.front, this.currentCard.back, this.currentCard.cardType, false).question)
-                    .fontSize(32)
+                    .fontSize(this.currentBp === BreakpointConstants.BREAKPOINT_LG ? 40 : 32)
                     .fontWeight(FontWeight.Bold)
                     .fontColor($r('app.color.text_primary'))
                     .textAlign(TextAlign.Center)
@@ -374,7 +380,7 @@ struct ReviewPage {
               Scroll() {
                 Column() {
                   Text(this.typeService.getRenderedContent(this.currentCard.front, this.currentCard.back, this.currentCard.cardType, true).question)
-                    .fontSize(24)
+                    .fontSize(this.currentBp === BreakpointConstants.BREAKPOINT_LG ? 28 : 24)
                     .fontWeight(FontWeight.Medium)
                     .fontColor($r('app.color.text_secondary'))
                     .margin({ bottom: 20 })
@@ -382,14 +388,14 @@ struct ReviewPage {
                   Divider().color($r('app.color.divider_color')).margin({ bottom: 20 })
                   
                   Text(this.typeService.getRenderedContent(this.currentCard.front, this.currentCard.back, this.currentCard.cardType, true).answer)
-                    .fontSize(32)
+                    .fontSize(this.currentBp === BreakpointConstants.BREAKPOINT_LG ? 40 : 32)
                     .fontWeight(FontWeight.Bold)
                     .fontColor($r('app.color.text_primary'))
                     .textAlign(TextAlign.Center)
                   
                   if (this.currentCard.extra) {
                     Text(this.currentCard.extra)
-                      .fontSize(16)
+                      .fontSize(18)
                       .fontColor($r('app.color.text_secondary'))
                       .margin({ top: 24 })
                       .fontStyle(FontStyle.Italic)
@@ -401,7 +407,8 @@ struct ReviewPage {
               .padding(24)
             }
           }
-          .width('90%')
+          .width(this.currentBp === BreakpointConstants.BREAKPOINT_SM ? '90%' : '70%')
+          .constraintSize({ maxWidth: 600 }) // 限制最大宽度以保证阅读体验
           .maxHeight('80%')
           .backgroundColor($r('app.color.card_background'))
           .borderRadius(24)
@@ -431,10 +438,15 @@ struct ReviewPage {
 
         // 底部评分栏
         if (this.isFlipped) {
-          RatingBar({
-            onRate: (rating: Rating) => this.handleRate(rating),
-            isLeftHanded: this.isLeftHanded
-          })
+          Column() {
+            RatingBar({
+              onRate: (rating: Rating) => this.handleRate(rating),
+              isLeftHanded: this.isLeftHanded
+            })
+          }
+          .width('100%')
+          .constraintSize({ maxWidth: 800 })
+          .alignSelf(ItemAlign.Center)
           .transition({ type: TransitionType.Insert, translate: { y: 100 } })
         } else {
           Text('点击屏幕或上滑查看答案')
@@ -466,6 +478,7 @@ struct ReviewPage {
               })
           }
           .width('90%')
+          .constraintSize({ maxWidth: 600 })
           .padding({ left: 16, right: 16, top: 12, bottom: 12 })
           .backgroundColor($r('app.color.snackbar_background'))
           .borderRadius(8)
