@@ -35,6 +35,18 @@
     ],
     "extensionAbilities": [
       {
+        "name": "EntryFormAbility",
+        "srcEntry": "./ets/form/EntryFormAbility.ets",
+        "type": "form",
+        "exported": true,
+        "metadata": [
+          {
+            "name": "ohos.extension.form",
+            "resource": "$profile:form_config"
+          }
+        ]
+      },
+      {
         "name": "EntryBackupAbility",
         "srcEntry": "./ets/entrybackupability/EntryBackupAbility.ets",
         "type": "backup",

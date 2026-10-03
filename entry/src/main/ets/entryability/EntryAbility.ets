@@ -5,6 +5,8 @@ import { window } from '@kit.ArkUI';
 const DOMAIN = 0x0000;
 
 export default class EntryAbility extends UIAbility {
+  private targetPage: string = '';
+
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
     try {
       this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
@@ -12,6 +14,20 @@ export default class EntryAbility extends UIAbility {
       hilog.error(DOMAIN, 'testTag', 'Failed to set colorMode. Cause: %{public}s', JSON.stringify(err));
     }
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onCreate');
+    this.checkTargetPage(want);
+  }
+
+  onNewWant(want: Want, launchParam: AbilityConstant.LaunchParam): void {
+    this.checkTargetPage(want);
+    if (this.targetPage) {
+      AppStorage.setOrCreate('targetPage', this.targetPage);
+    }
+  }
+
+  private checkTargetPage(want: Want): void {
+    if (want.parameters && want.parameters.targetPage) {
+      this.targetPage = want.parameters.targetPage as string;
+    }
   }
 
   onDestroy(): void {
@@ -21,6 +37,10 @@ export default class EntryAbility extends UIAbility {
   onWindowStageCreate(windowStage: window.WindowStage): void {
     // Main window is created, set main page for this ability
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onWindowStageCreate');
+
+    if (this.targetPage) {
+      AppStorage.setOrCreate('targetPage', this.targetPage);
+    }
 
     windowStage.loadContent('pages/Index', (err) => {
       if (err.code) {
