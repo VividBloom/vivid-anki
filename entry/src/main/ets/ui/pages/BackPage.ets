@@ -1,6 +1,7 @@
 import { common } from '@kit.AbilityKit';
 import { router } from '@kit.ArkUI';
 import { ReturnService } from '../../domain/review/ReturnService';
+import { Analytics } from '../../common/utils/Analytics';
 import { LogUtil } from '../../common/utils/LogUtil';
 
 /**
@@ -20,6 +21,7 @@ struct BackPage {
 
   async aboutToAppear(): Promise<void> {
     const ctx = getContext(this) as common.UIAbilityContext;
+    Analytics.logEvent(Analytics.EVENT_RETURN_MODE_TRIGGER);
     await this.loadReturnInfo(ctx);
   }
 

@@ -247,6 +247,16 @@ CREATE TABLE IF NOT EXISTS daily_stats (
 );
 
 -- ============================================================
+-- 6.13 analytics_event（埋点事件，V1.0 本地存储）
+-- ============================================================
+CREATE TABLE IF NOT EXISTS analytics_event (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_name  TEXT    NOT NULL,
+    params      TEXT,                                      -- JSON 字符串，存储扩展属性
+    created_at  INTEGER NOT NULL
+);
+
+-- ============================================================
 -- 6.12 索引
 -- 以下查询在首页 / 复习页 / 桌面卡片高频触发，缺索引会在几千张卡后掉帧
 -- ============================================================
@@ -285,3 +295,7 @@ CREATE INDEX IF NOT EXISTS idx_media_refcount ON media(ref_count);
 
 -- 备份保留最近 7 份
 CREATE INDEX IF NOT EXISTS idx_backup_created ON backup(created_at DESC);
+
+-- 埋点查询与导出
+CREATE INDEX IF NOT EXISTS idx_analytics_event_name ON analytics_event(event_name);
+CREATE INDEX IF NOT EXISTS idx_analytics_created ON analytics_event(created_at DESC);

@@ -80,7 +80,10 @@ export class ReminderService {
         slotType: reminderAgentManager.SlotType.SOCIAL_COMMUNICATION,
         wantAgent: {
           pkgName: ctx.abilityInfo.bundleName,
-          abilityName: ctx.abilityInfo.name
+          abilityName: ctx.abilityInfo.name,
+          parameters: {
+            from: 'notification'
+          }
         }
       };
 

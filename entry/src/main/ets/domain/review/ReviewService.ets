@@ -11,6 +11,7 @@ import { StatsService } from '../stats/StatsService';
 import { ReviewQueue, QueueConfig, QueueResult, QueueCard } from '../scheduler/ReviewQueue';
 import { FsrsScheduler, MemoryState, Rating } from '../scheduler/FsrsScheduler';
 import { TimeUtil } from '../../common/utils/TimeUtil';
+import { Analytics } from '../../common/utils/Analytics';
 import { LogUtil } from '../../common/utils/LogUtil';
 import { formBindingData, formProvider } from '@kit.FormKit';
 
@@ -170,7 +171,14 @@ export class ReviewService {
         durationMs: durationMs
       });
 
-      // 6. 更新会话进度（如果提供了会话信息）
+      // 6. 埋点
+      Analytics.logEvent(Analytics.EVENT_CARD_RATE, {
+        rating: rating,
+        duration_ms: durationMs,
+        is_new: isNew
+      });
+
+      // 7. 更新会话进度（如果提供了会话信息）
       if (sessionInfo) {
         await sessionDao.updateProgress(store, sessionInfo.sessionId, {
           completed: sessionInfo.completed,

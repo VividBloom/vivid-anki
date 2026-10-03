@@ -75,6 +75,22 @@ export default class CardDao {
   }
 
   /**
+   * 统计全量有效卡片数
+   */
+  async countAll(store: relationalStore.RdbStore): Promise<Result<number>> {
+    try {
+      const predicates = new relationalStore.RdbPredicates(CardDao.TABLE_NAME);
+      predicates.isNull('deleted_at');
+      const resultSet = await store.query(predicates);
+      const count = resultSet.rowCount;
+      resultSet.close();
+      return Result.success(count);
+    } catch (e) {
+      return Result.success(0);
+    }
+  }
+
+  /**
    * 查找到期要点
    * 必须命中 idx_card_due (due) WHERE deleted_at IS NULL
    */

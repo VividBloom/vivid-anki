@@ -3,7 +3,8 @@ import { relationalStore } from '@kit.ArkData';
 import { DbHelper } from '../../data/db/DbHelper';
 import CardDao from '../../data/dao/CardDao';
 import RevlogDao from '../../data/dao/RevlogDao';
-import DailyStatsDao from '../../data/dao/DailyStatsDao';
+import { DailyStatsDao } from '../../data/dao/DailyStatsDao';
+import { Analytics } from '../../common/utils/Analytics';
 import { LogUtil } from '../../common/utils/LogUtil';
 import { Result, ErrorCode } from '../../common/utils/Result';
 import { Rating } from '../scheduler/FsrsScheduler';
@@ -68,6 +69,12 @@ export class UndoService {
           undoCount: 1
         });
         if (!statsResult.ok) throw new Error('更新统计失败');
+
+        // D. 埋点
+        Analytics.logEvent(Analytics.EVENT_UNDO_ACTION, {
+          card_id: cardId,
+          rating: log.rating
+        });
 
         return Result.success(undefined);
       });

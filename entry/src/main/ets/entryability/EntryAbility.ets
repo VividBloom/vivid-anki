@@ -1,6 +1,8 @@
 import { AbilityConstant, ConfigurationConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
+import { StartupTasks } from '../domain/maintenance/StartupTasks';
+import { Analytics } from '../common/utils/Analytics';
 
 const DOMAIN = 0x0000;
 
@@ -15,6 +17,8 @@ export default class EntryAbility extends UIAbility {
     }
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onCreate');
     this.checkTargetPage(want);
+    // 执行启动任务（不阻塞主流程）
+    StartupTasks.runAll(this.context);
   }
 
   onNewWant(want: Want, launchParam: AbilityConstant.LaunchParam): void {
@@ -27,6 +31,15 @@ export default class EntryAbility extends UIAbility {
   private checkTargetPage(want: Want): void {
     if (want.parameters && want.parameters.targetPage) {
       this.targetPage = want.parameters.targetPage as string;
+    }
+    
+    // 埋点记录来源
+    if (want.parameters) {
+      if (want.parameters.from === 'widget') {
+        Analytics.logEvent(Analytics.EVENT_WIDGET_ACTIVE);
+      } else if (want.parameters.from === 'notification') {
+        Analytics.logEvent(Analytics.EVENT_NOTIFICATION_CLICK);
+      }
     }
   }
 

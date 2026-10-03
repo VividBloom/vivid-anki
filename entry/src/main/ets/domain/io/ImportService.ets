@@ -4,6 +4,7 @@ import { zlib } from '@kit.ContentFoundationKit';
 import { fileIo as fs } from '@kit.CoreFileKit';
 import { DbHelper } from '../../data/db/DbHelper';
 import DailyStatsDao from '../../data/dao/DailyStatsDao';
+import { Analytics } from '../../common/utils/Analytics';
 import { MediaService } from '../card/MediaService';
 import MediaDao from '../../data/dao/MediaDao';
 import { Result, ErrorCode } from '../../common/utils/Result';
@@ -86,6 +87,12 @@ export class ImportService {
 
       // 5. 执行导入逻辑
       const importedCount = await this.performImport(ctx, ankiStore, tempDir, options);
+
+      // 埋点
+      Analytics.logEvent(Analytics.EVENT_DECK_IMPORT, {
+        count: importedCount,
+        format: 'apkg'
+      });
 
       // 6. 清理
       ankiStore.close(); 

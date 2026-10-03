@@ -3,6 +3,7 @@ import { router } from '@kit.ArkUI';
 import { ReviewService, ReviewCard } from '../../domain/review/ReviewService';
 import { ResumeService } from '../../domain/session/ResumeService';
 import { UndoService } from '../../domain/review/UndoService';
+import { Analytics } from '../../common/utils/Analytics';
 import { QueueCard } from '../../common/types/ReviewTypes';
 import { Rating } from '../../domain/scheduler/FsrsScheduler';
 import { RatingBar } from '../components/RatingBar';
@@ -66,9 +67,25 @@ struct ReviewPage {
         this.queue = params.queue as QueueCard[];
         this.sessionId = params.sessionId as string || '';
         this.currentIndex = params.startIndex as number || 0;
+        
+        // 如果是从中途恢复的，记录中断恢复埋点
+        if (this.currentIndex > 0) {
+          Analytics.logEvent(Analytics.EVENT_SESSION_RESUME, {
+            position: this.currentIndex,
+            total: this.queue.length
+          });
+        }
       } else {
         const summary = await this.reviewService.getTodaySummary(ctx);
         this.queue = summary.cards;
+      }
+      
+      // 记录开始复习埋点
+      if (this.queue.length > 0) {
+        Analytics.logEvent(Analytics.EVENT_REVIEW_START, {
+          count: this.queue.length,
+          is_resume: this.currentIndex > 0
+        });
       }
       
       // 如果没有会话 ID 且队列不为空，则开启新会话
@@ -214,7 +231,12 @@ struct ReviewPage {
       if (this.currentIndex < this.queue.length) {
         await this.loadCard(this.queue[this.currentIndex].id);
       } else {
-        // 完成复习，结束会话并跳转至收尾页
+        // 完成复习，记录会话完成埋点
+        Analytics.logEvent(Analytics.EVENT_SESSION_COMPLETE, {
+          total: this.queue.length
+        });
+        
+        // 结束会话并跳转至收尾页
         if (this.sessionId) {
           await this.resumeService.finishSession(ctx, this.sessionId);
         }
@@ -427,6 +449,9 @@ struct ReviewPage {
 
   private flipCard() {
     if (!this.isFlipped) {
+      Analytics.logEvent(Analytics.EVENT_CARD_FLIP, {
+        card_id: this.currentCard?.id
+      });
       animateTo({ duration: 300 }, () => {
         this.isFlipped = true;
       });

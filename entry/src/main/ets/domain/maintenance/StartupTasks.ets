@@ -16,6 +16,8 @@ import { DbHelper } from '../../data/db/DbHelper';
 import { DeckLifecycleService, PurgeResult } from '../deck/DeckLifecycleService';
 import { ReminderService } from '../reminder/ReminderService';
 import { BackupService } from './BackupService';
+import { AnalyticsService } from '../analytics/AnalyticsService';
+import { Analytics } from '../../common/utils/Analytics';
 import { LogUtil } from '../../common/utils/LogUtil';
 
 export class StartupTasks {
@@ -28,9 +30,23 @@ export class StartupTasks {
    *   3. 失败不弹错 —— 维护动作失败只意味着这次没做，下次启动会重试
    */
   static async runAll(ctx: common.UIAbilityContext): Promise<void> {
+    await StartupTasks.initAnalytics(ctx);
     await StartupTasks.purgeRecycleBin(ctx);
     await StartupTasks.syncReminders(ctx);
     await StartupTasks.checkAutoBackup(ctx);
+  }
+
+  /**
+   * 初始化埋点系统并记录启动事件
+   */
+  private static async initAnalytics(ctx: common.UIAbilityContext): Promise<void> {
+    try {
+      const analyticsSvc = new AnalyticsService();
+      await analyticsSvc.init(ctx);
+      Analytics.logEvent(Analytics.EVENT_APP_LAUNCH);
+    } catch (e) {
+      LogUtil.e('StartupTasks', '埋点系统初始化失败: ' + JSON.stringify(e as object));
+    }
   }
 
   /**

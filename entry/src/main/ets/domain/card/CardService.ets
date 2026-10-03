@@ -5,6 +5,7 @@ import CardDao, { CardEntity } from '../../data/dao/CardDao';
 import DeckDao, { DeckEntity } from '../../data/dao/DeckDao';
 import { MediaService } from './MediaService';
 import { DeckLifecycleService } from '../deck/DeckLifecycleService';
+import { Analytics } from '../../common/utils/Analytics';
 import { Result, ErrorCode } from '../../common/utils/Result';
 import { TimeUtil } from '../../common/utils/TimeUtil';
 import { ParsedItem } from './CardParseService';
@@ -61,6 +62,10 @@ export class CardService {
       }
 
       // 2. 插入卡片
+      // 检查是否是第一张卡片
+      const countRes = await this.cardDao.countAll(store);
+      const isFirst = countRes.ok && countRes.data === 0;
+
       const cardResult = await this.cardDao.insert(store, {
         deckId: deckId,
         front: front,
@@ -75,6 +80,12 @@ export class CardService {
       }
       
       const cardId = cardResult.data;
+
+      // 埋点
+      Analytics.logEvent(Analytics.EVENT_MANUAL_CREATE);
+      if (isFirst) {
+        Analytics.logEvent(Analytics.EVENT_FIRST_CARD_CREATED);
+      }
 
       // 3. 处理媒体引用
       if (options?.mediaIds && options.mediaIds.length > 0) {

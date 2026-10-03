@@ -4,6 +4,7 @@ import { DbHelper } from '../../data/db/DbHelper';
 import AiDraftDao, { AiDraftEntity } from '../../data/dao/AiDraftDao';
 import { CardService } from './CardService';
 import { AiService, AiGenOptions } from '../ai/AiService';
+import { Analytics } from '../../common/utils/Analytics';
 import { Result, ErrorCode } from '../../common/utils/Result';
 import { LogUtil } from '../../common/utils/LogUtil';
 
@@ -139,6 +140,11 @@ export class AiDraftService {
       if (!updateResult.ok) {
         throw new Error(updateResult.message);
       }
+
+      // 4. 埋点
+      Analytics.logEvent(Analytics.EVENT_AI_GEN_CONFIRM, {
+        kept_count: confirmedItems.length
+      });
 
       return createResult;
     });

@@ -31,7 +31,7 @@ struct ExportPage {
     this.autoBackup = settings.autoBackup;
   }
 
-  private async handleExport(type: 'json' | 'apkg' | 'csv') {
+  private async handleExport(type: 'json' | 'apkg' | 'csv' | 'analytics') {
     try {
       this.status = 'exporting';
       this.progress = 0;
@@ -52,6 +52,14 @@ struct ExportPage {
         });
       } else if (type === 'csv') {
         result = await this.exportService.exportCsv(ctx, targetDir, {
+          onProgress: (step, prog) => {
+            this.stepMsg = step;
+            this.progress = prog;
+          },
+          signal: this.abortController.signal
+        });
+      } else if (type === 'analytics') {
+        result = await this.exportService.exportAnalytics(ctx, targetDir, {
           onProgress: (step, prog) => {
             this.stepMsg = step;
             this.progress = prog;
@@ -205,6 +213,14 @@ struct ExportPage {
           .fontColor('#333333')
           .border({ width: 1, color: '#EEEEEE' })
           .onClick(() => this.handleExport('csv'))
+
+        Button('导出埋点数据 (JSON)')
+          .width('100%')
+          .height(50)
+          .backgroundColor(Color.White)
+          .fontColor('#333333')
+          .border({ width: 1, color: '#EEEEEE' })
+          .onClick(() => this.handleExport('analytics'))
       }
       
       Column({ space: 4 }) {

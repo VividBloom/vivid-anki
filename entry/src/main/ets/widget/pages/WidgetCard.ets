@@ -69,7 +69,8 @@ struct WidgetCard {
               'action': 'router',
               'abilityName': 'EntryAbility',
               'params': {
-                'targetPage': 'ReviewPage'
+                'targetPage': 'ReviewPage',
+                'from': 'widget'
               }
             });
           })
@@ -86,7 +87,8 @@ struct WidgetCard {
         'action': 'router',
         'abilityName': 'EntryAbility',
         'params': {
-          'targetPage': 'ReviewPage'
+          'targetPage': 'ReviewPage',
+          'from': 'widget'
         }
       });
     })

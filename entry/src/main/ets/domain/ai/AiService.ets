@@ -1,5 +1,6 @@
 import { common } from '@kit.AbilityKit';
 import { Result, ErrorCode } from '../../common/utils/Result';
+import { Analytics } from '../../common/utils/Analytics';
 import { LogUtil } from '../../common/utils/LogUtil';
 
 /**
@@ -33,6 +34,12 @@ export class AiService {
    */
   async generate(options: AiGenOptions): Promise<Result<string>> {
     const { sourceText, sourceType, onProgress, signal } = options;
+    
+    // 记录 AI 生成开始埋点
+    Analytics.logEvent(Analytics.EVENT_AI_GEN_START, {
+      source_type: sourceType,
+      text_length: sourceText.length
+    });
 
     try {
       // 1. 检查网络（此处模拟，实际应调用网络检查 API）

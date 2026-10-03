@@ -4,10 +4,13 @@ import { zlib } from '@kit.ContentFoundationKit';
 import { fileIo as fs } from '@kit.CoreFileKit';
 import { DbHelper } from '../../data/db/DbHelper';
 import { Result } from '../../common/utils/Result';
+import { Analytics } from '../../common/utils/Analytics';
 import { ErrorCode } from '../../common/constants/ErrorCode';
 import { TimeUtil } from '../../common/utils/TimeUtil';
 import { LogUtil } from '../../common/utils/LogUtil';
 import { MediaService } from '../card/MediaService';
+
+import { AnalyticsService } from '../analytics/AnalyticsService';
 
 /**
  * 导出选项
@@ -25,6 +28,7 @@ export interface ExportOptions {
  * 职责：
  *   1. 导出 JSON 格式数据（全量备份）
  *   2. 导出 .apkg 格式数据（兼容 Anki 及本 App 再次导入）
+ *   3. 导出埋点数据（离线分析用）
  * 
  * 术语：
  *   - UI 展示：「导出合集」
@@ -33,6 +37,38 @@ export interface ExportOptions {
 export class ExportService {
   private static readonly TAG = 'ExportService';
   private mediaService = new MediaService();
+  private analyticsService = new AnalyticsService();
+
+  /**
+   * 导出埋点数据为 JSON
+   * 
+   * @param ctx UI 上下文
+   * @param targetDir 目标目录
+   * @param options 导出选项
+   */
+  async exportAnalytics(ctx: common.UIAbilityContext, targetDir: string, options?: ExportOptions): Promise<Result<string>> {
+    try {
+      options?.onProgress?.('正在提取埋点数据...', 20);
+      const events = await this.analyticsService.getAllEvents(ctx);
+
+      if (options?.signal?.aborted) return Result.failure(ErrorCode.EXPORT_IO, '用户已取消');
+      options?.onProgress?.('正在生成 JSON...', 60);
+
+      const fileName = `memo_analytics_${TimeUtil.now()}.json`;
+      const filePath = `${targetDir}/${fileName}`;
+      const jsonStr = JSON.stringify(events, null, 2);
+
+      const file = fs.openSync(filePath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE | fs.OpenMode.TRUNCATE);
+      fs.writeSync(file.fd, jsonStr);
+      fs.closeSync(file);
+
+      options?.onProgress?.('完成', 100);
+      return Result.success(filePath);
+    } catch (e) {
+      LogUtil.e(ExportService.TAG, '埋点导出失败: ' + JSON.stringify(e));
+      return Result.failure(ErrorCode.EXPORT_IO, '导出失败，请重试');
+    }
+  }
 
   /**
    * 导出为 JSON 文件
@@ -64,6 +100,9 @@ export class ExportService {
       const file = fs.openSync(filePath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE | fs.OpenMode.TRUNCATE);
       fs.writeSync(file.fd, jsonStr);
       fs.closeSync(file);
+
+      // 埋点
+      Analytics.logEvent(Analytics.EVENT_DATA_EXPORT, { format: 'json' });
 
       options?.onProgress?.('导出完成', 100);
       return Result.success(filePath);
@@ -122,6 +161,10 @@ export class ExportService {
       await zlib.compressFile(tempDir, apkgPath);
 
       if (options?.signal?.aborted) throw new Error('CANCELED');
+      
+      // 埋点
+      Analytics.logEvent(Analytics.EVENT_DATA_EXPORT, { format: 'apkg' });
+
       options?.onProgress?.('完成', 100);
       return Result.success(apkgPath);
     } catch (e) {
@@ -174,6 +217,9 @@ export class ExportService {
       const file = fs.openSync(filePath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE | fs.OpenMode.TRUNCATE);
       fs.writeSync(file.fd, content);
       fs.closeSync(file);
+
+      // 埋点
+      Analytics.logEvent(Analytics.EVENT_DATA_EXPORT, { format: 'csv' });
 
       options?.onProgress?.('导出完成', 100);
       return Result.success(filePath);

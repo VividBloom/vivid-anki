@@ -1,6 +1,7 @@
 import { common } from '@kit.AbilityKit';
 import { router } from '@kit.ArkUI';
 import { OnboardingService } from '../../domain/onboarding/OnboardingService';
+import { Analytics } from '../../common/utils/Analytics';
 import { LogUtil } from '../../common/utils/LogUtil';
 
 /**
@@ -28,6 +29,8 @@ struct OnboardPage {
       // 如果已经完成引导，直接进入首页
       if (this.currentStep >= 4) {
         this.goHome();
+      } else if (this.currentStep === 0) {
+        Analytics.logEvent(Analytics.EVENT_ONBOARDING_START);
       }
     } catch (e) {
       LogUtil.e('OnboardPage', '获取引导进度失败: ' + JSON.stringify(e));
@@ -38,11 +41,19 @@ struct OnboardPage {
 
   private async nextStep() {
     const ctx = getContext(this) as common.UIAbilityContext;
+    
+    // 记录每一步的完成
+    if (this.currentStep === 0) Analytics.logEvent(Analytics.EVENT_ONBOARDING_STEP_1);
+    else if (this.currentStep === 1) Analytics.logEvent(Analytics.EVENT_ONBOARDING_STEP_2);
+    else if (this.currentStep === 2) Analytics.logEvent(Analytics.EVENT_ONBOARDING_STEP_3);
+    else if (this.currentStep === 3) Analytics.logEvent(Analytics.EVENT_ONBOARDING_STEP_4);
+
     if (this.currentStep < 3) {
       this.currentStep++;
       await this.onboardingService.updateStep(ctx, this.currentStep);
     } else {
       await this.onboardingService.finish(ctx);
+      Analytics.logEvent(Analytics.EVENT_ONBOARDING_COMPLETE);
       this.goHome();
     }
   }
