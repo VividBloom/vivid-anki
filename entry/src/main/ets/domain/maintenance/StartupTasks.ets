@@ -19,6 +19,7 @@ import { BackupService } from './BackupService';
 import { AnalyticsService } from '../analytics/AnalyticsService';
 import { Analytics } from '../../common/utils/Analytics';
 import { LogUtil } from '../../common/utils/LogUtil';
+import { PresetContentService } from '../deck/PresetContentService';
 
 export class StartupTasks {
   /**
@@ -31,9 +32,22 @@ export class StartupTasks {
    */
   static async runAll(ctx: common.UIAbilityContext): Promise<void> {
     await StartupTasks.initAnalytics(ctx);
+    await StartupTasks.injectPresetContent(ctx);
     await StartupTasks.purgeRecycleBin(ctx);
     await StartupTasks.syncReminders(ctx);
     await StartupTasks.checkAutoBackup(ctx);
+  }
+
+  /**
+   * 注入预置精品牌组内容
+   */
+  private static async injectPresetContent(ctx: common.UIAbilityContext): Promise<void> {
+    try {
+      const presetSvc = new PresetContentService();
+      await presetSvc.injectPresetContent(ctx);
+    } catch (e) {
+      LogUtil.e('StartupTasks', '注入预置内容失败: ' + JSON.stringify(e as object));
+    }
   }
 
   /**
