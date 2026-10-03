@@ -2,18 +2,20 @@ import { common } from '@kit.AbilityKit';
 import { router, promptAction } from '@kit.ArkUI';
 import { picker } from '@kit.CoreFileKit';
 import { ExportService } from '../../domain/io/ExportService';
+import { SettingsService, SettingsDTO } from '../../domain/settings/SettingsService';
 import { LogUtil } from '../../common/utils/LogUtil';
 
 /**
  * 导出合集页
  * 
- * 职责：提供 JSON 与 apkg 两种格式的导出功能。
+ * 职责：提供 JSON、apkg、CSV 三种格式的导出功能，并管理自动备份开关。
  * 禁语检查：遵守 UI 禁语，文案正向。
  */
 @Entry
 @Component
 struct ExportPage {
   private exportService: ExportService = new ExportService();
+  private settingsService: SettingsService = new SettingsService();
   private abortController: AbortController | null = null;
 
   @State status: 'idle' | 'exporting' | 'success' | 'failed' = 'idle';
@@ -21,25 +23,35 @@ struct ExportPage {
   @State stepMsg: string = '';
   @State errorMsg: string = '';
   @State exportPath: string = '';
+  @State autoBackup: boolean = true;
 
-  private async handleExport(type: 'json' | 'apkg') {
+  async aboutToAppear() {
+    const ctx = getContext(this) as common.UIAbilityContext;
+    const settings = await this.settingsService.getSettings(ctx);
+    this.autoBackup = settings.autoBackup;
+  }
+
+  private async handleExport(type: 'json' | 'apkg' | 'csv') {
     try {
-      const folderPicker = new picker.DocumentViewPicker();
-      const folderSelectOptions = new picker.DocumentSelectOptions();
-      // 鸿蒙 DocumentViewPicker.select 默认返回文件路径，此处我们直接导出到公共目录或提示用户选择
-      // 简化逻辑：导出到应用沙箱的 Documents 目录，并提示路径，或者使用 DocumentViewPicker 保存文件
-      
       this.status = 'exporting';
       this.progress = 0;
       this.stepMsg = '准备导出...';
       this.abortController = new AbortController();
 
       const ctx = getContext(this) as common.UIAbilityContext;
-      const targetDir = ctx.filesDir; // 默认导出到沙箱 files 目录
+      const targetDir = ctx.filesDir;
 
       let result;
       if (type === 'json') {
         result = await this.exportService.exportJson(ctx, targetDir, {
+          onProgress: (step, prog) => {
+            this.stepMsg = step;
+            this.progress = prog;
+          },
+          signal: this.abortController.signal
+        });
+      } else if (type === 'csv') {
+        result = await this.exportService.exportCsv(ctx, targetDir, {
           onProgress: (step, prog) => {
             this.stepMsg = step;
             this.progress = prog;
@@ -125,10 +137,10 @@ struct ExportPage {
 
   @Builder
   IdleView() {
-    Column({ space: 32 }) {
+    Column({ space: 24 }) {
       Image($r('app.media.ic_public_share'))
-        .width(80)
-        .height(80)
+        .width(60)
+        .height(60)
         .fillColor('#007DFF')
         .opacity(0.1)
       
@@ -142,7 +154,36 @@ struct ExportPage {
       }
       .alignItems(HorizontalAlign.Center)
 
-      Column({ space: 16 }) {
+      // 自动备份开关
+      Row() {
+        Column({ space: 4 }) {
+          Text('每日自动快照')
+            .fontSize(16)
+            .fontWeight(FontWeight.Medium)
+          Text('每天首次启动时自动备份最近 7 天数据')
+            .fontSize(12)
+            .fontColor('#999999')
+        }
+        .alignItems(HorizontalAlign.Start)
+        .layoutWeight(1)
+
+        Toggle({ type: ToggleType.Switch, isOn: this.autoBackup })
+          .selectedColor('#007DFF')
+          .onChange(async (isOn: boolean) => {
+            const ctx = getContext(this) as common.UIAbilityContext;
+            const success = await this.settingsService.updateSetting(ctx, { autoBackup: isOn });
+            if (success) {
+              this.autoBackup = isOn;
+            }
+          })
+      }
+      .width('100%')
+      .padding(16)
+      .backgroundColor(Color.White)
+      .borderRadius(12)
+      .margin({ top: 8, bottom: 8 })
+
+      Column({ space: 12 }) {
         Button('导出为 Anki (.apkg)')
           .width('100%')
           .height(50)
@@ -156,13 +197,29 @@ struct ExportPage {
           .fontColor('#333333')
           .border({ width: 1, color: '#EEEEEE' })
           .onClick(() => this.handleExport('json'))
+
+        Button('导出为 CSV (表格格式)')
+          .width('100%')
+          .height(50)
+          .backgroundColor(Color.White)
+          .fontColor('#333333')
+          .border({ width: 1, color: '#EEEEEE' })
+          .onClick(() => this.handleExport('csv'))
       }
       
-      Text('注：导出的 apkg 可再次导入本应用，复习记录会完整保留。')
-        .fontSize(12)
-        .fontColor('#BBBBBB')
-        .textAlign(TextAlign.Center)
-        .padding({ left: 20, right: 20 })
+      Column({ space: 4 }) {
+        Text('本应用导出永久免费、永不设限')
+          .fontSize(12)
+          .fontColor('#007DFF')
+          .fontWeight(FontWeight.Medium)
+        
+        Text('注：导出的 apkg 可再次导入本应用，复习记录会完整保留。')
+          .fontSize(12)
+          .fontColor('#BBBBBB')
+          .textAlign(TextAlign.Center)
+      }
+      .alignItems(HorizontalAlign.Center)
+      .padding({ left: 20, right: 20 })
     }
   }
 

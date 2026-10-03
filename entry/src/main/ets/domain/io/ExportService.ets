@@ -141,6 +141,48 @@ export class ExportService {
     }
   }
 
+  /**
+   * 导出为 CSV 文件 (通用表格格式)
+   * 
+   * @param ctx UI 上下文
+   * @param targetDir 目标目录
+   * @param options 导出选项
+   */
+  async exportCsv(ctx: common.UIAbilityContext, targetDir: string, options?: ExportOptions): Promise<Result<string>> {
+    try {
+      options?.onProgress?.('正在提取要点...', 10);
+      const store = await DbHelper.getInstance(ctx);
+      const cards = await this.fetchAllCards(store);
+      
+      if (options?.signal?.aborted) return Result.failure(ErrorCode.EXPORT_IO, '用户已取消');
+      options?.onProgress?.('正在生成 CSV...', 50);
+
+      const fileName = `memo_export_${TimeUtil.now()}.csv`;
+      const filePath = `${targetDir}/${fileName}`;
+      
+      // CSV Header
+      let content = '正面,背面,状态,最后复习时间,复习次数\n';
+      
+      for (const c of cards) {
+        // 简单处理 CSV 转义
+        const f = `"${(c.front || '').replace(/"/g, '""')}"`;
+        const b = `"${(c.back || '').replace(/"/g, '""')}"`;
+        const lastRev = c.last_review ? TimeUtil.formatDate(c.last_review) : '';
+        content += `${f},${b},${c.state},${lastRev},${c.reps}\n`;
+      }
+
+      const file = fs.openSync(filePath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE | fs.OpenMode.TRUNCATE);
+      fs.writeSync(file.fd, content);
+      fs.closeSync(file);
+
+      options?.onProgress?.('导出完成', 100);
+      return Result.success(filePath);
+    } catch (e) {
+      LogUtil.e(ExportService.TAG, 'CSV 导出失败: ' + JSON.stringify(e));
+      return Result.failure(ErrorCode.EXPORT_IO, '导出失败，请重试');
+    }
+  }
+
   private async fetchAllDecks(store: relationalStore.RdbStore): Promise<any[]> {
     const resultSet = await store.querySql('SELECT * FROM deck WHERE deleted_at IS NULL');
     const list: any[] = [];
