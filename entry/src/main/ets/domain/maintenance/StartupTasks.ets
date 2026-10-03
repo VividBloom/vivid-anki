@@ -15,6 +15,7 @@ import { common } from '@kit.AbilityKit';
 import { DbHelper } from '../../data/db/DbHelper';
 import { DeckLifecycleService, PurgeResult } from '../deck/DeckLifecycleService';
 import { ReminderService } from '../reminder/ReminderService';
+import { BackupService } from './BackupService';
 import { LogUtil } from '../../common/utils/LogUtil';
 
 export class StartupTasks {
@@ -29,6 +30,19 @@ export class StartupTasks {
   static async runAll(ctx: common.UIAbilityContext): Promise<void> {
     await StartupTasks.purgeRecycleBin(ctx);
     await StartupTasks.syncReminders(ctx);
+    await StartupTasks.checkAutoBackup(ctx);
+  }
+
+  /**
+   * 检查并执行每日自动备份
+   */
+  private static async checkAutoBackup(ctx: common.UIAbilityContext): Promise<void> {
+    try {
+      const backupSvc = new BackupService();
+      await backupSvc.checkAutoBackup(ctx);
+    } catch (e) {
+      LogUtil.w('StartupTasks', '自动备份检查失败: ' + JSON.stringify(e as object));
+    }
   }
 
   /**

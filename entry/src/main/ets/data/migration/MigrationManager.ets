@@ -1,7 +1,8 @@
 import { relationalStore } from '@kit.ArkData';
+import { common } from '@kit.AbilityKit';
 import { LogUtil } from '../../common/utils/LogUtil';
-import BackupDao from '../dao/BackupDao';
-import CardDao from '../dao/CardDao';
+import { TimeUtil } from '../../common/utils/TimeUtil';
+import { BackupManager } from '../db/BackupManager';
 
 /**
  * 数据库迁移管理器
@@ -19,35 +20,12 @@ export class MigrationManager {
    * 迁移前备份
    * 失败时抛出异常，由 DbHelper 捕获并阻断初始化流程。
    */
-  static async backupPreMigration(store: relationalStore.RdbStore, from: number): Promise<void> {
-    const backupName = `memo_v${from}_pre_migration.db`;
+  static async backupPreMigration(ctx: common.UIAbilityContext, store: relationalStore.RdbStore, from: number): Promise<void> {
+    const backupName = `memo_v${from}_pre_migration_${TimeUtil.now()}.db`;
     LogUtil.i(MigrationManager.TAG, `开始迁移前备份: ${backupName}`);
 
     try {
-      // 1. 执行物理备份
-      await store.backup(backupName);
-
-      // 2. 统计当前要点总数（含已标记删除的，以确保数据快照的准确性）
-      const cardDao = new CardDao();
-      const predicates = new relationalStore.RdbPredicates('card');
-      const resultSet = await store.query(predicates);
-      const totalCards = resultSet.rowCount;
-      resultSet.close();
-
-      // 3. 记录到 backup 表，供用户后续在「设置 - 数据恢复」中查阅
-      const backupDao = new BackupDao();
-      const result = await backupDao.insert(store, {
-        filePath: backupName,
-        fileSize: 0, // 物理备份文件大小需通过 ohos.file.fs 获取，此处先填 0
-        backupType: 'pre_migration',
-        schemaVersion: from,
-        cardCount: totalCards
-      });
-
-      if (!result.ok) {
-        throw new Error('备份记录登记失败: ' + result.error.message);
-      }
-
+      await BackupManager.performBackupAndRotate(ctx, store, backupName, 'pre_migration');
       LogUtil.i(MigrationManager.TAG, '迁移前备份完成');
     } catch (e) {
       LogUtil.e(MigrationManager.TAG, '迁移前备份失败，将阻断升级: ' + JSON.stringify(e));

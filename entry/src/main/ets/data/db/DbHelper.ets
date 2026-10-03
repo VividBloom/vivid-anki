@@ -57,7 +57,7 @@ export class DbHelper {
       await DbHelper.writeVersion(store, TARGET_VERSION);
     } else if (current < TARGET_VERSION) {
       // 迁移前必写快照 —— 这是「升级不丢数据」红线的兜底
-      await DbHelper.backupBeforeMigration(store, current);
+      await DbHelper.backupBeforeMigration(ctx, store, current);
       await DbHelper.migrate(store, current, TARGET_VERSION);
       await DbHelper.writeVersion(store, TARGET_VERSION);
     }
@@ -100,9 +100,10 @@ export class DbHelper {
    * 迁移前备份。失败必须阻断迁移，不能带着风险升级。
    * 具体实现见 data/migration/MigrationManager.ets
    */
-  private static async backupBeforeMigration(store: relationalStore.RdbStore,
+  private static async backupBeforeMigration(ctx: common.UIAbilityContext,
+                                             store: relationalStore.RdbStore,
                                              from: number): Promise<void> {
-    await MigrationManager.backupPreMigration(store, from);
+    await MigrationManager.backupPreMigration(ctx, store, from);
   }
 
   private static async migrate(store: relationalStore.RdbStore, from: number,
