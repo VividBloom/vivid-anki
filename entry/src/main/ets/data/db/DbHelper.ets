@@ -123,8 +123,9 @@ export class DbHelper {
       return r;
     } catch (e) {
       await store.rollBack();
-      LogUtil.e('DbHelper', '事务回滚: ' + JSON.stringify(e as object));
-      throw new Error(JSON.stringify(e as object));
+      const errMsg = e instanceof Error ? e.message : JSON.stringify(e);
+      LogUtil.e('DbHelper', '事务回滚: ' + errMsg);
+      throw e;
     }
   }
 

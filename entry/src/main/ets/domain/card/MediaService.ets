@@ -17,6 +17,8 @@ import { LogUtil } from '../../common/utils/LogUtil';
 export class MediaService {
   private mediaDao = new MediaDao();
   private static readonly MEDIA_DIR = 'media';
+  /** 单个媒体文件上限 10MB，防止大图 OOM */
+  private static readonly MAX_FILE_SIZE = 10 * 1024 * 1024;
 
   /**
    * 保存媒体文件到应用私有目录并登记
@@ -27,6 +29,15 @@ export class MediaService {
    */
   async saveMedia(ctx: common.UIAbilityContext, sourceUri: string, type: string): Promise<Result<number>> {
     try {
+      // 0. 检查源文件是否存在及大小
+      if (!fs.accessSync(sourceUri)) {
+        return Result.failure(ErrorCode.FILE_ERROR, '源文件不存在');
+      }
+      const sourceStat = fs.statSync(sourceUri);
+      if (sourceStat.size > MediaService.MAX_FILE_SIZE) {
+        return Result.failure(ErrorCode.FILE_ERROR, '文件过大，上限 10MB');
+      }
+
       // 1. 准备目标目录
       const mediaDir = `${ctx.filesDir}/${MediaService.MEDIA_DIR}`;
       if (!fs.accessSync(mediaDir)) {

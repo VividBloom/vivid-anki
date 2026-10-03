@@ -96,7 +96,7 @@ struct ReviewPage {
         if (id) this.sessionId = id;
       }
 
-      if (this.queue.length > 0 && this.currentIndex < this.queue.length) {
+      if (this.queue.length > 0 && this.currentIndex < this.queue.length && this.queue[this.currentIndex]) {
         await this.loadCard(this.queue[this.currentIndex].id);
       } else if (this.queue.length === 0) {
         this.isError = true;
@@ -195,18 +195,35 @@ struct ReviewPage {
   }
 
   async loadCard(cardId: number) {
+    if (!cardId) return;
+    
     const ctx = getContext(this) as common.UIAbilityContext;
-    this.currentCard = await this.reviewService.getCardDetail(ctx, cardId);
+    const card = await this.reviewService.getCardDetail(ctx, cardId);
+    
+    if (!card) {
+      LogUtil.e('ReviewPage', `Card not found: ${cardId}`);
+      this.isError = true;
+      this.errorMessage = '无法加载该要点';
+      return;
+    }
+
+    this.currentCard = card;
     this.isFlipped = false;
     this.startTime = Date.now();
     
     // 加载媒体详情
-    if (this.currentCard?.mediaRefs && this.currentCard.mediaRefs.length > 0) {
-      const details = await this.reviewService.getMediaDetails(ctx, this.currentCard.mediaRefs);
-      this.mediaDetails.clear();
-      details.forEach(m => {
-        this.mediaDetails.set(m.id!, this.mediaService.getAbsPath(ctx, m.localPath));
-      });
+    if (this.currentCard.mediaRefs && this.currentCard.mediaRefs.length > 0) {
+      try {
+        const details = await this.reviewService.getMediaDetails(ctx, this.currentCard.mediaRefs);
+        this.mediaDetails.clear();
+        details.forEach(m => {
+          if (m.localPath) {
+            this.mediaDetails.set(m.id!, this.mediaService.getAbsPath(ctx, m.localPath));
+          }
+        });
+      } catch (e) {
+        LogUtil.w('ReviewPage', '加载媒体失败: ' + JSON.stringify(e));
+      }
     }
   }
 
@@ -230,9 +247,9 @@ struct ReviewPage {
       this.currentIndex++;
       this.showSnackbar('已评分', '撤销');
 
-      if (this.currentIndex < this.queue.length) {
+      if (this.currentIndex < this.queue.length && this.queue[this.currentIndex]) {
         await this.loadCard(this.queue[this.currentIndex].id);
-      } else {
+      } else if (this.currentIndex >= this.queue.length) {
         // 完成复习，记录会话完成埋点
         Analytics.logEvent(Analytics.EVENT_SESSION_COMPLETE, {
           total: this.queue.length,
@@ -265,7 +282,9 @@ struct ReviewPage {
           this.currentIndex > 0 ? this.queue[this.currentIndex-1].id : 0, 
           Math.max(0, this.currentIndex - 1));
           
-        await this.loadCard(this.queue[this.currentIndex].id);
+        if (this.queue[this.currentIndex]) {
+          await this.loadCard(this.queue[this.currentIndex].id);
+        }
         this.showSnackbar('已撤销', '重做');
       }
     } catch (e) {
