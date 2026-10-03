@@ -154,7 +154,7 @@ export struct CardsPage {
         // 顶部搜索栏
         Search({ placeholder: '搜索要点内容...', value: this.searchKeyword })
           .width('100%')
-          .height(40)
+          .minHeight(40)
           .margin({ top: 12, bottom: 12, left: 16, right: 16 })
           .onChange((v: string) => this.handleSearch(v))
 
@@ -177,7 +177,7 @@ export struct CardsPage {
       }
       .width('100%')
       .height('100%')
-      .backgroundColor('#F7F7F7')
+      .backgroundColor($r('app.color.page_background'))
 
       // 悬浮添加按钮
       Button({ type: ButtonType.Circle }) {
@@ -189,7 +189,7 @@ export struct CardsPage {
       .width(56)
       .height(56)
       .margin({ right: 24, bottom: 24 })
-      .backgroundColor('#007DFF')
+      .backgroundColor($r('app.color.primary_color'))
       .shadow({ radius: 10, color: '#33007DFF', offsetX: 0, offsetY: 5 })
       .onClick(() => {
         router.pushUrl({ url: 'ui/pages/CreateCardPage' });
@@ -207,9 +207,10 @@ export struct CardsPage {
               Text(deck.name)
                 .fontSize(18)
                 .fontWeight(FontWeight.Medium)
+                .fontColor($r('app.color.text_primary'))
               Text(`${deck.cardCount} 个要点`)
                 .fontSize(14)
-                .fontColor('#999999')
+                .fontColor($r('app.color.text_tertiary'))
                 .margin({ top: 4 })
             }
             .alignItems(HorizontalAlign.Start)
@@ -218,11 +219,11 @@ export struct CardsPage {
             Image($r('app.media.ic_public_arrow_right'))
               .width(20)
               .height(20)
-              .fillColor('#CCCCCC')
+              .fillColor($r('app.color.divider_color'))
           }
           .width('100%')
           .padding(16)
-          .backgroundColor(Color.White)
+          .backgroundColor($r('app.color.card_background'))
           .borderRadius(12)
           .onClick(() => {
             // 跳转到合集详情（待开发）
@@ -254,18 +255,19 @@ export struct CardsPage {
               Text(card.front)
                 .fontSize(16)
                 .fontWeight(FontWeight.Medium)
+                .fontColor($r('app.color.text_primary'))
                 .maxLines(1)
                 .textOverflow({ overflow: TextOverflow.Ellipsis })
               Text(card.back)
                 .fontSize(14)
-                .fontColor('#666666')
+                .fontColor($r('app.color.text_secondary'))
                 .maxLines(1)
                 .textOverflow({ overflow: TextOverflow.Ellipsis })
                 .margin({ top: 4 })
             }
             .width('100%')
             .padding(16)
-            .backgroundColor(Color.White)
+            .backgroundColor($r('app.color.card_background'))
             .borderRadius(12)
             .alignItems(HorizontalAlign.Start)
             .onClick(() => {

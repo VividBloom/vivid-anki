@@ -66,19 +66,21 @@ struct StatsPage {
         Image($r('app.media.ic_public_back'))
           .width(24)
           .height(24)
+          .fillColor($r('app.color.text_primary'))
           .onClick(() => router.back())
         
         Text('学习成就')
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
+          .fontColor($r('app.color.text_primary'))
           .margin({ left: 16 })
         
         Blank()
       }
       .width('100%')
-      .height(56)
+      .minHeight(56)
       .padding({ left: 16, right: 16 })
-      .backgroundColor(Color.White)
+      .backgroundColor($r('app.color.card_background'))
 
       if (this.isLoading) {
         this.SkeletonView()
@@ -115,7 +117,7 @@ struct StatsPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#F7F7F7')
+    .backgroundColor($r('app.color.page_background'))
   }
 
   @Builder
@@ -126,27 +128,27 @@ struct StatsPage {
           .width(32)
           .height(32)
           .margin({ right: 8 })
-          .fillColor('#FF4500')
+          .fillColor($r('app.color.rating_again'))
         
         Text('连续学习')
           .fontSize(16)
-          .fontColor('#666666')
+          .fontColor($r('app.color.text_secondary'))
       }
       
       Text(this.stats.streakDays.toString())
         .fontSize(64)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#333333')
+        .fontColor($r('app.color.text_primary'))
         .margin({ top: 8 })
       
       Text('天')
         .fontSize(20)
         .fontWeight(FontWeight.Medium)
-        .fontColor('#666666')
+        .fontColor($r('app.color.text_secondary'))
     }
     .width('100%')
     .padding(24)
-    .backgroundColor(Color.White)
+    .backgroundColor($r('app.color.card_background'))
     .borderRadius(24)
     .alignItems(HorizontalAlign.Center)
   }
@@ -157,6 +159,7 @@ struct StatsPage {
       Text('今日完成情况')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
+        .fontColor($r('app.color.text_primary'))
         .width('100%')
         .margin({ bottom: 20 })
 
@@ -173,16 +176,17 @@ struct StatsPage {
           Text(this.stats.todayDone.toString())
             .fontSize(28)
             .fontWeight(FontWeight.Bold)
+            .fontColor($r('app.color.text_primary'))
           Text(`目标 ${this.stats.dailyGoal}`)
             .fontSize(12)
-            .fontColor('#999999')
+            .fontColor($r('app.color.text_tertiary'))
             .margin({ top: 4 })
         }
       }
     }
     .width('100%')
     .padding(20)
-    .backgroundColor(Color.White)
+    .backgroundColor($r('app.color.card_background'))
     .borderRadius(24)
   }
 
@@ -192,6 +196,7 @@ struct StatsPage {
       Text('未来 7 天计划')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
+        .fontColor($r('app.color.text_primary'))
         .width('100%')
         .margin({ bottom: 20 })
 
@@ -202,15 +207,16 @@ struct StatsPage {
               .width(12)
               .height(Math.max(4, Math.min(60, count * 1.5)))
               .radius(6)
-              .fill(count > 0 ? '#007DFF' : '#F0F0F0')
+              .fill(count > 0 ? $r('app.color.primary_color') : $r('app.color.divider_color'))
             
             Text(count.toString())
               .fontSize(10)
+              .fontColor($r('app.color.text_primary'))
               .margin({ top: 8 })
             
             Text(this.getDayLabel(index))
               .fontSize(10)
-              .fontColor('#999999')
+              .fontColor($r('app.color.text_tertiary'))
               .margin({ top: 4 })
           }
           .layoutWeight(1)
@@ -222,7 +228,7 @@ struct StatsPage {
     }
     .width('100%')
     .padding(20)
-    .backgroundColor(Color.White)
+    .backgroundColor($r('app.color.card_background'))
     .borderRadius(24)
   }
 
@@ -232,6 +238,7 @@ struct StatsPage {
       Text('近 30 天活跃度')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
+        .fontColor($r('app.color.text_primary'))
         .width('100%')
         .margin({ bottom: 20 })
 
@@ -248,7 +255,7 @@ struct StatsPage {
     }
     .width('100%')
     .padding(20)
-    .backgroundColor(Color.White)
+    .backgroundColor($r('app.color.card_background'))
     .borderRadius(24)
   }
 
@@ -268,12 +275,12 @@ struct StatsPage {
     return data;
   }
 
-  private getHeatmapColor(count: number): string {
-    if (count === 0) return '#F5F5F5';
-    if (count < 5) return '#D5E8FF';
-    if (count < 20) return '#80BFFF';
-    if (count < 50) return '#3399FF';
-    return '#007DFF';
+  private getHeatmapColor(count: number): Resource {
+    if (count === 0) return $r('app.color.heatmap_level_0');
+    if (count < 5) return $r('app.color.heatmap_level_1');
+    if (count < 20) return $r('app.color.heatmap_level_2');
+    if (count < 50) return $r('app.color.heatmap_level_3');
+    return $r('app.color.heatmap_level_4');
   }
 
   private getDayLabel(offset: number): string {

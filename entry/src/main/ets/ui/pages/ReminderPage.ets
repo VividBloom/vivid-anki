@@ -58,25 +58,27 @@ struct ReminderPage {
         Image($r('app.media.ic_public_back'))
           .width(24)
           .height(24)
+          .fillColor($r('app.color.text_primary'))
           .onClick(() => router.back())
         
         Text('每日提醒')
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
+          .fontColor($r('app.color.text_primary'))
           .margin({ left: 16 })
         
         Blank()
         
         Text('完成')
           .fontSize(16)
-          .fontColor('#007DFF')
+          .fontColor($r('app.color.primary_color'))
           .fontWeight(FontWeight.Medium)
           .onClick(() => this.handleSave())
       }
       .width('100%')
-      .height(56)
+      .minHeight(56)
       .padding({ left: 16, right: 16 })
-      .backgroundColor(Color.White)
+      .backgroundColor($r('app.color.card_background'))
 
       if (this.isLoading) {
         LoadingProgress().width(48).height(48).margin({ top: 100 })
@@ -88,9 +90,10 @@ struct ReminderPage {
                 Text('定时提醒')
                   .fontSize(16)
                   .fontWeight(FontWeight.Medium)
+                  .fontColor($r('app.color.text_primary'))
                 Text('开启后，每天准时为你准备好要点')
                   .fontSize(14)
-                  .fontColor('#999999')
+                  .fontColor($r('app.color.text_tertiary'))
                   .margin({ top: 4 })
               }
               .alignItems(HorizontalAlign.Start)
@@ -98,13 +101,15 @@ struct ReminderPage {
               Blank()
               
               Toggle({ type: ToggleType.Switch, isOn: this.isEnabled })
+                .selectedColor($r('app.color.primary_color'))
                 .onChange((isOn: boolean) => {
                   this.isEnabled = isOn;
                 })
             }
             .width('100%')
+            .minHeight(72)
             .padding(16)
-            .backgroundColor(Color.White)
+            .backgroundColor($r('app.color.card_background'))
           }
 
           if (this.isEnabled) {
@@ -113,22 +118,24 @@ struct ReminderPage {
                 Text('提醒时间')
                   .fontSize(16)
                   .fontWeight(FontWeight.Medium)
+                  .fontColor($r('app.color.text_primary'))
                 
                 Blank()
                 
                 Text(this.selectedTime)
                   .fontSize(16)
-                  .fontColor('#666666')
+                  .fontColor($r('app.color.text_secondary'))
                   .margin({ right: 8 })
                 
                 Image($r('app.media.ic_public_arrow_right'))
                   .width(16)
                   .height(16)
-                  .fillColor('#CCCCCC')
+                  .fillColor($r('app.color.text_tertiary'))
               }
               .width('100%')
+              .minHeight(56)
               .padding(16)
-              .backgroundColor(Color.White)
+              .backgroundColor($r('app.color.card_background'))
               .onClick(() => {
                 TimePickerDialog.show({
                   selected: new Date(`2024-01-01 ${this.selectedTime}`),
@@ -147,17 +154,17 @@ struct ReminderPage {
           ListItem() {
             Text('温馨提示：闹钟类提醒会在系统后台运行，确保你不会错过当天的学习计划。')
               .fontSize(12)
-              .fontColor('#BBBBBB')
+              .fontColor($r('app.color.text_tertiary'))
               .padding(16)
           }
         }
         .width('100%')
         .layoutWeight(1)
-        .backgroundColor('#F7F7F7')
+        .backgroundColor($r('app.color.page_background'))
       }
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#F7F7F7')
+    .backgroundColor($r('app.color.page_background'))
   }
 }

@@ -59,7 +59,7 @@ struct TrashPage {
       },
       secondaryButton: {
         value: '彻底删除',
-        fontColor: '#FF4D4F',
+        fontColor: $r('app.color.error_color'),
         action: async () => {
           const ctx = getContext(this) as common.UIAbilityContext;
           const success = await this.trashService.hardDeleteItem(ctx, item.id, item.type);
@@ -81,34 +81,36 @@ struct TrashPage {
         Image($r('app.media.ic_public_back'))
           .width(24)
           .height(24)
+          .fillColor($r('app.color.text_primary'))
           .onClick(() => router.back())
         
         Text('回收站')
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
+          .fontColor($r('app.color.text_primary'))
           .margin({ left: 16 })
         
         Blank()
       }
       .width('100%')
-      .height(56)
+      .minHeight(56)
       .padding({ left: 16, right: 16 })
-      .backgroundColor(Color.White)
+      .backgroundColor($r('app.color.card_background'))
 
       // 顶部提示条
       Row() {
         Image($r('app.media.ic_public_info'))
           .width(16)
           .height(16)
-          .fillColor('#666666')
+          .fillColor($r('app.color.text_secondary'))
           .margin({ right: 8 })
         Text('到期清理后复习记录会保留')
           .fontSize(14)
-          .fontColor('#666666')
+          .fontColor($r('app.color.text_secondary'))
       }
       .width('100%')
       .padding({ top: 12, bottom: 12, left: 16, right: 16 })
-      .backgroundColor('#F0F0F0')
+      .backgroundColor($r('app.color.divider_color'))
 
       if (this.isLoading) {
         SkeletonList({ count: 8 }).margin({ top: 12 })
@@ -135,7 +137,7 @@ struct TrashPage {
           ListItem() {
             Text('恢复合集不会捞回你单独删除的要点')
               .fontSize(12)
-              .fontColor('#BBBBBB')
+              .fontColor($r('app.color.text_tertiary'))
               .width('100%')
               .textAlign(TextAlign.Center)
               .padding({ top: 20, bottom: 40 })
@@ -147,7 +149,7 @@ struct TrashPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#F7F7F7')
+    .backgroundColor($r('app.color.page_background'))
   }
 
   @Builder
@@ -157,18 +159,19 @@ struct TrashPage {
         Text(item.name)
           .fontSize(16)
           .fontWeight(FontWeight.Medium)
+          .fontColor($r('app.color.text_primary'))
           .maxLines(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
         
         Row() {
           Text(item.type === 'deck' ? '合集' : '要点')
             .fontSize(12)
-            .fontColor('#999999')
+            .fontColor($r('app.color.text_tertiary'))
             .margin({ right: 8 })
           
           Text(`还剩 ${item.remainingDays} 天`)
             .fontSize(12)
-            .fontColor(item.remainingDays <= 7 ? '#E67E22' : '#999999')
+            .fontColor(item.remainingDays <= 7 ? $r('app.color.warning_color') : $r('app.color.text_tertiary'))
         }
         .margin({ top: 4 })
       }
@@ -178,19 +181,19 @@ struct TrashPage {
       Row({ space: 16 }) {
         Text('恢复')
           .fontSize(14)
-          .fontColor('#007DFF')
+          .fontColor($r('app.color.primary_color'))
           .fontWeight(FontWeight.Medium)
           .onClick(() => this.handleRestore(item))
         
         Text('彻底删除')
           .fontSize(14)
-          .fontColor('#999999')
+          .fontColor($r('app.color.text_tertiary'))
           .onClick(() => this.handleHardDelete(item))
       }
     }
     .width('100%')
     .padding(16)
-    .backgroundColor(Color.White)
+    .backgroundColor($r('app.color.card_background'))
     .borderRadius(12)
     .shadow({ radius: 4, color: '#05000000', offsetY: 2 })
   }

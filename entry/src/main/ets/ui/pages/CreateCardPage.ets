@@ -77,11 +77,13 @@ struct CreateCardPage {
         Image($r('app.media.ic_public_back'))
           .width(24)
           .height(24)
+          .fillColor($r('app.color.text_primary'))
           .onClick(() => router.back())
         
         Text('添加要点')
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
+          .fontColor($r('app.color.text_primary'))
           .margin({ left: 16 })
         
         Blank()
@@ -92,14 +94,14 @@ struct CreateCardPage {
           Text('保存')
             .fontSize(16)
             .fontWeight(FontWeight.Medium)
-            .fontColor(this.frontText.trim() ? '#007DFF' : '#999999')
+            .fontColor(this.frontText.trim() ? $r('app.color.primary_color') : $r('app.color.text_tertiary'))
             .onClick(() => this.handleSave())
         }
       }
       .width('100%')
-      .height(56)
+      .minHeight(56)
       .padding({ left: 16, right: 16 })
-      .backgroundColor(Color.White)
+      .backgroundColor($r('app.color.card_background'))
 
       Scroll() {
         Column() {
@@ -125,10 +127,11 @@ struct CreateCardPage {
             Row() {
               Text('更多选项')
                 .fontSize(14)
-                .fontColor('#666666')
+                .fontColor($r('app.color.text_secondary'))
               Image(this.showMoreOptions ? $r('app.media.ic_public_arrow_up') : $r('app.media.ic_public_arrow_down'))
                 .width(16)
                 .height(16)
+                .fillColor($r('app.color.text_secondary'))
                 .margin({ left: 4 })
             }
             .onClick(() => this.showMoreOptions = !this.showMoreOptions)
@@ -140,8 +143,10 @@ struct CreateCardPage {
                 this.ToggleItem('填空模式', this.isCloze, (v: boolean) => this.isCloze = v)
                 
                 TextArea({ placeholder: '补充说明（如例句、来源等）...', text: this.extraInfo })
-                  .height(100)
-                  .backgroundColor('#F0F0F0')
+                  .minHeight(100)
+                  .backgroundColor($r('app.color.page_background'))
+                  .fontColor($r('app.color.text_primary'))
+                  .placeholderColor($r('app.color.text_tertiary'))
                   .borderRadius(8)
                   .onChange((v: string) => this.extraInfo = v)
               }
@@ -158,7 +163,7 @@ struct CreateCardPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#F7F7F7')
+    .backgroundColor($r('app.color.page_background'))
   }
 
   @Builder
@@ -166,12 +171,14 @@ struct CreateCardPage {
     Column() {
       Text(label)
         .fontSize(14)
-        .fontColor('#666666')
+        .fontColor($r('app.color.text_secondary'))
         .margin({ bottom: 8 })
       
       TextArea({ placeholder: `点击输入${label}内容`, text: text })
-        .height(140)
-        .backgroundColor(Color.White)
+        .minHeight(140)
+        .backgroundColor($r('app.color.card_background'))
+        .fontColor($r('app.color.text_primary'))
+        .placeholderColor($r('app.color.text_tertiary'))
         .borderRadius(12)
         .padding(12)
         .onChange(onChange)
@@ -184,14 +191,13 @@ struct CreateCardPage {
   @Builder
   EntryItem(label: string, icon: Resource) {
     Column() {
-      // 这里的图标如果不存在会显示占位符，实际开发中需确保资源文件存在
       Image(icon)
         .width(24)
         .height(24)
-        .fillColor('#666666')
+        .fillColor($r('app.color.text_secondary'))
       Text(label)
         .fontSize(12)
-        .fontColor('#666666')
+        .fontColor($r('app.color.text_secondary'))
         .margin({ top: 4 })
     }
     .onClick(() => promptAction.showToast({ message: '即将上线' }))
@@ -202,12 +208,13 @@ struct CreateCardPage {
     Row() {
       Text(label)
         .fontSize(16)
-        .fontColor('#333333')
+        .fontColor($r('app.color.text_primary'))
       Blank()
       Toggle({ type: ToggleType.Switch, isOn: isOn })
+        .selectedColor($r('app.color.primary_color'))
         .onChange(onChange)
     }
     .width('100%')
-    .height(48)
+    .minHeight(48)
   }
 }

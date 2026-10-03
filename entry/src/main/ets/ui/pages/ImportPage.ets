@@ -81,19 +81,21 @@ struct ImportPage {
         Image($r('app.media.ic_public_back'))
           .width(24)
           .height(24)
+          .fillColor($r('app.color.text_primary'))
           .onClick(() => router.back())
         
         Text('导入合集')
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
+          .fontColor($r('app.color.text_primary'))
           .margin({ left: 16 })
         
         Blank()
       }
       .width('100%')
-      .height(56)
+      .minHeight(56)
       .padding({ left: 16, right: 16 })
-      .backgroundColor(Color.White)
+      .backgroundColor($r('app.color.card_background'))
 
       Column() {
         if (this.status === 'idle') {
@@ -113,7 +115,7 @@ struct ImportPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#F7F7F7')
+    .backgroundColor($r('app.color.page_background'))
   }
 
   @Builder
@@ -122,23 +124,24 @@ struct ImportPage {
       Image($r('app.media.ic_public_add_filled'))
         .width(80)
         .height(80)
-        .fillColor('#007DFF')
+        .fillColor($r('app.color.primary_color'))
         .opacity(0.1)
       
       Column({ space: 8 }) {
         Text('从 Anki 导入内容')
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
+          .fontColor($r('app.color.text_primary'))
         Text('支持 .apkg 格式文件')
           .fontSize(14)
-          .fontColor('#999999')
+          .fontColor($r('app.color.text_tertiary'))
       }
       .alignItems(HorizontalAlign.Center)
 
       Button('选择文件')
         .width('100%')
-        .height(50)
-        .backgroundColor('#007DFF')
+        .minHeight(50)
+        .backgroundColor($r('app.color.primary_color'))
         .onClick(() => this.handleSelectFile())
     }
   }
@@ -149,25 +152,26 @@ struct ImportPage {
       Progress({ value: this.progress, total: 100, type: ProgressType.Ring })
         .width(120)
         .height(120)
-        .color('#007DFF')
+        .color($r('app.color.primary_color'))
         .style({ strokeWidth: 10 })
       
       Column({ space: 8 }) {
         Text(this.stepMsg)
           .fontSize(16)
           .fontWeight(FontWeight.Medium)
+          .fontColor($r('app.color.text_primary'))
         Text('请保持应用在前台运行')
           .fontSize(12)
-          .fontColor('#999999')
+          .fontColor($r('app.color.text_tertiary'))
       }
       .alignItems(HorizontalAlign.Center)
 
       Button('取消')
         .width(120)
-        .height(40)
+        .minHeight(40)
         .backgroundColor(Color.Transparent)
-        .fontColor('#999999')
-        .border({ width: 1, color: '#EEEEEE' })
+        .fontColor($r('app.color.text_tertiary'))
+        .border({ width: 1, color: $r('app.color.divider_color') })
         .onClick(() => this.handleCancel())
     }
   }
@@ -178,26 +182,27 @@ struct ImportPage {
       Image($r('app.media.ic_public_ok'))
         .width(80)
         .height(80)
-        .fillColor('#2ECC71')
+        .fillColor($r('app.color.success_color'))
       
       Column({ space: 8 }) {
         Text('导入成功')
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
+          .fontColor($r('app.color.text_primary'))
         Text(`已成功导入 ${this.importedCount} 个要点`)
           .fontSize(16)
-          .fontColor('#666666')
+          .fontColor($r('app.color.text_secondary'))
         Text('内容已按每天 20 个分批安排')
           .fontSize(14)
-          .fontColor('#999999')
+          .fontColor($r('app.color.text_tertiary'))
           .margin({ top: 8 })
       }
       .alignItems(HorizontalAlign.Center)
 
       Button('开始学习')
         .width('100%')
-        .height(50)
-        .backgroundColor('#007DFF')
+        .minHeight(50)
+        .backgroundColor($r('app.color.primary_color'))
         .onClick(() => router.back())
     }
   }
@@ -208,26 +213,27 @@ struct ImportPage {
       Image($r('app.media.ic_public_cancel'))
         .width(80)
         .height(80)
-        .fillColor('#FF4D4F')
+        .fillColor($r('app.color.error_color'))
       
       Column({ space: 12 }) {
         Text('导入失败')
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
+          .fontColor($r('app.color.text_primary'))
         Text(this.errorMsg)
           .fontSize(16)
-          .fontColor('#666666')
+          .fontColor($r('app.color.text_secondary'))
           .textAlign(TextAlign.Center)
         
         Row() {
           Image($r('app.media.ic_public_info'))
             .width(14)
             .height(14)
-            .fillColor('#999999')
+            .fillColor($r('app.color.text_tertiary'))
             .margin({ right: 4 })
           Text('原始文件未被修改')
             .fontSize(12)
-            .fontColor('#999999')
+            .fontColor($r('app.color.text_tertiary'))
         }
         .margin({ top: 8 })
       }
@@ -236,15 +242,15 @@ struct ImportPage {
       Row({ space: 16 }) {
         Button('重试')
           .layoutWeight(1)
-          .height(50)
-          .backgroundColor('#007DFF')
+          .minHeight(50)
+          .backgroundColor($r('app.color.primary_color'))
           .onClick(() => this.handleSelectFile())
         
         Button('返回')
           .layoutWeight(1)
-          .height(50)
-          .backgroundColor('#F0F0F0')
-          .fontColor('#666666')
+          .minHeight(50)
+          .backgroundColor($r('app.color.divider_color'))
+          .fontColor($r('app.color.text_secondary'))
           .onClick(() => router.back())
       }
     }

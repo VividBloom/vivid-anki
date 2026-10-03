@@ -61,11 +61,11 @@ struct BackPage {
         Text('欢迎回来！')
           .fontSize(32)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#333333')
+          .fontColor($r('app.color.text_primary'))
         
         Text(`先来 ${this.quota} 个要点热热身？`)
           .fontSize(20)
-          .fontColor('#666666')
+          .fontColor($r('app.color.text_secondary'))
       }
       .alignItems(HorizontalAlign.Center)
       .margin({ bottom: 40 })
@@ -76,22 +76,22 @@ struct BackPage {
           Image($r('app.media.ic_public_ok'))
             .width(20)
             .height(20)
-            .fillColor('#2ECC71')
+            .fillColor($r('app.color.success_color'))
             .margin({ right: 8 })
-          Text('不催你，也不显示积压数字')
+          Text('不催你，也不显示待办数字')
             .fontSize(16)
-            .fontColor('#999999')
+            .fontColor($r('app.color.text_tertiary'))
         }
         
         Row() {
           Image($r('app.media.ic_public_ok'))
             .width(20)
             .height(20)
-            .fillColor('#2ECC71')
+            .fillColor($r('app.color.success_color'))
             .margin({ right: 8 })
           Text(`接下来的 ${this.days} 天我们将分批为你安排复习`)
             .fontSize(16)
-            .fontColor('#999999')
+            .fontColor($r('app.color.text_tertiary'))
         }
       }
       .alignItems(HorizontalAlign.Start)
@@ -103,16 +103,16 @@ struct BackPage {
       } else {
         Button('开始热身')
           .width(200)
-          .height(56)
+          .minHeight(56)
           .fontSize(18)
           .fontWeight(FontWeight.Medium)
-          .backgroundColor('#007DFF')
+          .backgroundColor($r('app.color.primary_color'))
           .borderRadius(28)
           .onClick(() => this.startLearning())
         
         Text('稍后再说')
           .fontSize(16)
-          .fontColor('#999999')
+          .fontColor($r('app.color.text_tertiary'))
           .margin({ top: 24 })
           .onClick(() => router.back())
       }
@@ -121,6 +121,6 @@ struct BackPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(Color.White)
+    .backgroundColor($r('app.color.page_background'))
   }
 }

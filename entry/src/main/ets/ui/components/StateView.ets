@@ -32,16 +32,16 @@ export struct StateView {
   }
 
   /** 默认颜色 */
-  private getColor(): string {
+  private getColor(): Resource {
     switch (this.type) {
       case 'empty':
-        return '#2ECC71';
+        return $r('app.color.success_color');
       case 'error':
-        return '#FF4D4F';
+        return $r('app.color.error_color');
       case 'network':
-        return '#FAAD14';
+        return $r('app.color.warning_color');
       default:
-        return '#2ECC71';
+        return $r('app.color.success_color');
     }
   }
 
@@ -57,12 +57,12 @@ export struct StateView {
       Text(this.title || (this.type === 'empty' ? '空空如也' : this.type === 'error' ? '出错了' : '网络连接异常'))
         .fontSize(20)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#333333')
+        .fontColor($r('app.color.text_primary'))
         .margin({ bottom: 12 })
 
       Text(this.message || (this.type === 'empty' ? '还没有内容，开始创建吧' : this.type === 'error' ? '请稍后重试' : '请检查网络设置'))
         .fontSize(14)
-        .fontColor('#999999')
+        .fontColor($r('app.color.text_tertiary'))
         .textAlign(TextAlign.Center)
         .padding({ left: 40, right: 40 })
         .margin({ bottom: 32 })

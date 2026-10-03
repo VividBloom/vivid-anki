@@ -72,45 +72,49 @@ struct OnboardPage {
           Row({ space: 8 }) {
             ForEach([0, 1, 2, 3], (item: number) => {
               Rect()
-                .width('22%')
+                .layoutWeight(1)
                 .height(4)
                 .radius(2)
-                .fill(item <= this.currentStep ? '#007DFF' : '#E5E5E5')
+                .fill(item <= this.currentStep ? $r('app.color.primary_color') : $r('app.color.divider_color'))
             })
           }
           .width('100%')
           .padding({ left: 20, right: 20, top: 20, bottom: 40 })
 
-          // 内容区域
-          Column() {
-            if (this.currentStep === 0) {
-              this.Step1Starter()
-            } else if (this.currentStep === 1) {
-              this.Step2Content()
-            } else if (this.currentStep === 2) {
-              this.Step3Time()
-            } else if (this.currentStep === 3) {
-              this.Step4Principle()
+          // 内容区域 (增加滚动支持大字号)
+          Scroll() {
+            Column() {
+              if (this.currentStep === 0) {
+                this.Step1Starter()
+              } else if (this.currentStep === 1) {
+                this.Step2Content()
+              } else if (this.currentStep === 2) {
+                this.Step3Time()
+              } else if (this.currentStep === 3) {
+                this.Step4Principle()
+              }
             }
+            .width('100%')
+            .padding({ left: 24, right: 24, bottom: 40 })
           }
           .layoutWeight(1)
           .width('100%')
-          .padding({ left: 24, right: 24 })
 
           // 底部动作
           if (this.currentStep === 3) {
             Button('开始我的第一课')
               .width('80%')
-              .height(56)
+              .minHeight(56)
               .fontSize(18)
               .fontWeight(FontWeight.Medium)
               .margin({ bottom: 40 })
+              .backgroundColor($r('app.color.primary_color'))
               .onClick(() => this.nextStep())
           }
         }
         .width('100%')
         .height('100%')
-        .backgroundColor(Color.White)
+        .backgroundColor($r('app.color.page_background'))
       }
     }
   }
@@ -121,11 +125,12 @@ struct OnboardPage {
       Text('选个感兴趣的起点')
         .fontSize(28)
         .fontWeight(FontWeight.Bold)
+        .fontColor($r('app.color.text_primary'))
         .margin({ bottom: 12 })
       
       Text('我们将为你准备好第一批要点')
         .fontSize(16)
-        .fontColor('#666666')
+        .fontColor($r('app.color.text_secondary'))
         .margin({ bottom: 48 })
 
       this.StarterOption('日常口语', '常用交流，即学即用')
@@ -143,24 +148,26 @@ struct OnboardPage {
         Text(title)
           .fontSize(18)
           .fontWeight(FontWeight.Medium)
+          .fontColor($r('app.color.text_primary'))
         Text(sub)
           .fontSize(14)
-          .fontColor('#999999')
+          .fontColor($r('app.color.text_tertiary'))
           .margin({ top: 4 })
       }
+      .layoutWeight(1)
       .alignItems(HorizontalAlign.Start)
-      
-      Blank()
       
       Image($r('app.media.ic_public_arrow_right'))
         .width(20)
         .height(20)
+        .fillColor($r('app.color.text_tertiary'))
         .opacity(0.3)
     }
     .width('100%')
+    .minHeight(80)
     .padding(20)
     .margin({ bottom: 16 })
-    .backgroundColor(isGhost ? '#F9F9F9' : '#F0F7FF')
+    .backgroundColor(isGhost ? $r('app.color.page_background') : $r('app.color.success_light'))
     .borderRadius(16)
     .onClick(() => {
       this.nextStep();
@@ -173,24 +180,25 @@ struct OnboardPage {
       Text('丢进内容')
         .fontSize(28)
         .fontWeight(FontWeight.Bold)
+        .fontColor($r('app.color.text_primary'))
         .margin({ bottom: 12 })
       
-      Text('只需一步，将素材变为你的记忆资产')
+      Text('只需一步，将素材变为你的核心资产')
         .fontSize(16)
-        .fontColor('#666666')
+        .fontColor($r('app.color.text_secondary'))
         .margin({ bottom: 48 })
 
       Row({ space: 16 }) {
-        this.ContentEntry('拍照', $r('app.media.ic_public_camera'), '#4CAF50')
-        this.ContentEntry('粘贴', $r('app.media.ic_public_paste'), '#2196F3')
-        this.ContentEntry('文档', $r('app.media.ic_public_documents'), '#FF9800')
+        this.ContentEntry('拍照', $r('app.media.ic_public_camera'), $r('app.color.success_color'))
+        this.ContentEntry('粘贴', $r('app.media.ic_public_paste'), $r('app.color.primary_color'))
+        this.ContentEntry('文档', $r('app.media.ic_public_documents'), $r('app.color.warning_color'))
       }
       .width('100%')
       .justifyContent(FlexAlign.Center)
       
       Text('或者跳过，稍后再说')
         .fontSize(14)
-        .fontColor('#999999')
+        .fontColor($r('app.color.text_tertiary'))
         .margin({ top: 60 })
         .width('100%')
         .textAlign(TextAlign.Center)
@@ -200,7 +208,7 @@ struct OnboardPage {
   }
 
   @Builder
-  ContentEntry(label: string, icon: Resource, color: string) {
+  ContentEntry(label: string, icon: Resource, color: Resource) {
     Column() {
       Circle()
         .width(64)
@@ -215,6 +223,7 @@ struct OnboardPage {
         )
       Text(label)
         .fontSize(16)
+        .fontColor($r('app.color.text_primary'))
         .margin({ top: 12 })
     }
     .layoutWeight(1)
@@ -227,11 +236,12 @@ struct OnboardPage {
       Text('定个时间')
         .fontSize(28)
         .fontWeight(FontWeight.Bold)
+        .fontColor($r('app.color.text_primary'))
         .margin({ bottom: 12 })
       
       Text('每天花一点时间，积攒巨大的进步')
         .fontSize(16)
-        .fontColor('#666666')
+        .fontColor($r('app.color.text_secondary'))
         .margin({ bottom: 48 })
 
       this.TimeOption(5, '利用碎片时间')
@@ -240,7 +250,7 @@ struct OnboardPage {
 
       Text('随时可以在设置中修改')
         .fontSize(14)
-        .fontColor('#999999')
+        .fontColor($r('app.color.text_tertiary'))
         .margin({ top: 32 })
         .width('100%')
         .textAlign(TextAlign.Center)
@@ -255,19 +265,19 @@ struct OnboardPage {
       Text(`${min} 分钟`)
         .fontSize(20)
         .fontWeight(isSelected ? FontWeight.Bold : FontWeight.Medium)
-        .fontColor(isSelected ? '#007DFF' : Color.Black)
+        .fontColor(isSelected ? $r('app.color.primary_color') : $r('app.color.text_primary'))
       
       Blank()
       
       Text(sub)
         .fontSize(14)
-        .fontColor(isSelected ? '#007DFF' : '#999999')
+        .fontColor(isSelected ? $r('app.color.primary_color') : $r('app.color.text_tertiary'))
     }
     .width('100%')
     .padding(24)
     .margin({ bottom: 16 })
-    .backgroundColor(isSelected ? '#F0F7FF' : '#F9F9F9')
-    .border({ width: 2, color: isSelected ? '#007DFF' : Color.Transparent })
+    .backgroundColor(isSelected ? $r('app.color.success_light') : $r('app.color.card_background'))
+    .border({ width: 2, color: isSelected ? $r('app.color.primary_color') : Color.Transparent })
     .borderRadius(16)
     .onClick(async () => {
       this.selectedTime = min;
@@ -283,11 +293,12 @@ struct OnboardPage {
       Text('科学原理')
         .fontSize(28)
         .fontWeight(FontWeight.Bold)
+        .fontColor($r('app.color.text_primary'))
         .margin({ bottom: 12 })
       
       Text('科学复习，对抗遗忘')
         .fontSize(16)
-        .fontColor('#666666')
+        .fontColor($r('app.color.text_secondary'))
         .margin({ bottom: 32 })
 
       Column() {
@@ -296,22 +307,23 @@ struct OnboardPage {
           .width('100%')
           .height(120)
           .radius(8)
-          .fill('#F9F9F9')
+          .fill($r('app.color.divider_color'))
           .margin({ bottom: 24 })
         
         Text('今天只给你 12 个要点')
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
+          .fontColor($r('app.color.text_primary'))
           .margin({ top: 16, bottom: 8 })
         
         Text('这不是少，是刚刚好')
           .fontSize(16)
-          .fontColor('#007DFF')
+          .fontColor($r('app.color.primary_color'))
           .fontWeight(FontWeight.Medium)
         
         Text('循序渐进是长期坚持的秘密')
           .fontSize(14)
-          .fontColor('#999999')
+          .fontColor($r('app.color.text_tertiary'))
           .margin({ top: 12 })
       }
       .width('100%')

@@ -163,17 +163,19 @@ struct AiPreviewPage {
         Image($r('app.media.ic_public_back'))
           .width(24)
           .height(24)
+          .fillColor($r('app.color.text_primary'))
           .onClick(() => router.back())
         Text(this.genStatus === 'generating' ? 'AI 正在提取' : '预览生成结果')
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
+          .fontColor($r('app.color.text_primary'))
           .margin({ left: 16 })
         Blank()
       }
       .width('100%')
-      .height(56)
+      .minHeight(56)
       .padding({ left: 16, right: 16 })
-      .backgroundColor(Color.White)
+      .backgroundColor($r('app.color.card_background'))
 
       if (this.genStatus === 'generating') {
         this.GeneratingView()
@@ -185,9 +187,10 @@ struct AiPreviewPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#F7F7F7')
+    .backgroundColor($r('app.color.page_background'))
     .bindSheet(this.editingItem !== null, this.EditSheet(), {
       height: SheetSize.MEDIUM,
+      backgroundColor: $r('app.color.card_background'),
       onDisappear: () => { this.editingItem = null }
     })
   }
@@ -200,29 +203,30 @@ struct AiPreviewPage {
       LoadingProgress()
         .width(64)
         .height(64)
-        .color('#007DFF')
+        .color($r('app.color.primary_color'))
       
       Text(this.genStepMsg)
         .fontSize(18)
         .fontWeight(FontWeight.Medium)
+        .fontColor($r('app.color.text_primary'))
         .margin({ top: 24, bottom: 8 })
       
       Text('通常需要 3-8 秒')
         .fontSize(14)
-        .fontColor('#999999')
+        .fontColor($r('app.color.text_tertiary'))
         .margin({ bottom: 32 })
       
       Progress({ value: this.genProgress, total: 100, type: ProgressType.Linear })
         .width('80%')
-        .color('#007DFF')
+        .color($r('app.color.primary_color'))
       
       Blank().layoutWeight(1)
       
       Button('取消')
         .width('60%')
-        .height(44)
-        .backgroundColor('#F0F0F0')
-        .fontColor('#666666')
+        .minHeight(44)
+        .backgroundColor($r('app.color.divider_color'))
+        .fontColor($r('app.color.text_secondary'))
         .onClick(() => this.handleCancel())
         .margin({ bottom: 48 })
     }
@@ -238,36 +242,38 @@ struct AiPreviewPage {
       Image($r('app.media.ic_public_fail'))
         .width(64)
         .height(64)
-        .fillColor('#E74C3C')
+        .fillColor($r('app.color.error_color'))
       
       Text('提取遇到一点问题')
         .fontSize(20)
         .fontWeight(FontWeight.Bold)
+        .fontColor($r('app.color.text_primary'))
       
       Text(this.errorMsg)
         .fontSize(16)
-        .fontColor('#666666')
+        .fontColor($r('app.color.text_secondary'))
         .textAlign(TextAlign.Center)
         .padding({ left: 32, right: 32 })
       
       Text('本次操作不扣除额度')
         .fontSize(12)
-        .fontColor('#999999')
+        .fontColor($r('app.color.text_tertiary'))
       
       Column({ space: 12 }) {
         Button('重试')
           .width(200)
-          .height(48)
+          .minHeight(48)
+          .backgroundColor($r('app.color.primary_color'))
           .onClick(() => {
             // 重新触发生成
           })
         
         Button('手动制卡')
           .width(200)
-          .height(48)
-          .backgroundColor(Color.White)
-          .fontColor('#333333')
-          .border({ width: 1, color: '#DDDDDD' })
+          .minHeight(48)
+          .backgroundColor($r('app.color.card_background'))
+          .fontColor($r('app.color.text_primary'))
+          .border({ width: 1, color: $r('app.color.divider_color') })
           .onClick(() => {
             router.replaceUrl({ url: 'ui/pages/CreateCardPage' });
           })
@@ -283,21 +289,21 @@ struct AiPreviewPage {
   @Builder
   SuccessListView() {
     Column() {
-      // 橙色警示条
+      // 警示条
       Row() {
         Image($r('app.media.ic_public_info'))
           .width(16)
           .height(16)
-          .fillColor('#E67E22')
+          .fillColor($r('app.color.warning_color'))
           .margin({ right: 8 })
         Text('请逐张确认后再入库')
           .fontSize(14)
-          .fontColor('#E67E22')
+          .fontColor($r('app.color.warning_color'))
           .fontWeight(FontWeight.Medium)
       }
       .width('100%')
       .padding({ top: 8, bottom: 8, left: 16, right: 16 })
-      .backgroundColor('#FEF5ED')
+      .backgroundColor($r('app.color.warning_light'))
 
       // 内容列表
       List({ space: 12 }) {
@@ -315,14 +321,14 @@ struct AiPreviewPage {
       Row() {
         Button(`确认 (${this.selectedCount})`)
           .width('100%')
-          .height(48)
-          .backgroundColor(this.selectedCount > 0 ? '#007DFF' : '#CCCCCC')
+          .minHeight(48)
+          .backgroundColor(this.selectedCount > 0 ? $r('app.color.primary_color') : $r('app.color.divider_color'))
           .enabled(this.selectedCount > 0 && !this.isSaving)
           .onClick(() => this.handleConfirm())
       }
       .width('100%')
       .padding(16)
-      .backgroundColor(Color.White)
+      .backgroundColor($r('app.color.card_background'))
       .shadow({ radius: 10, color: '#10000000', offsetY: -5 })
     }
   }
@@ -332,7 +338,8 @@ struct AiPreviewPage {
     Row() {
       Checkbox({ name: item.id, group: 'drafts' })
         .select(item.selected)
-        .selectedColor('#007DFF')
+        .selectedColor($r('app.color.primary_color'))
+        .unselectedColor($r('app.color.divider_color'))
         .onChange((value: boolean) => {
           item.selected = value;
         })
@@ -342,12 +349,13 @@ struct AiPreviewPage {
         Text(item.front)
           .fontSize(16)
           .fontWeight(FontWeight.Medium)
+          .fontColor($r('app.color.text_primary'))
           .maxLines(2)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
           .margin({ bottom: 4 })
         Text(item.back)
           .fontSize(14)
-          .fontColor('#666666')
+          .fontColor($r('app.color.text_secondary'))
           .maxLines(2)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
       }
@@ -358,21 +366,21 @@ struct AiPreviewPage {
         Image($r('app.media.ic_public_edit'))
           .width(20)
           .height(20)
-          .fillColor('#007DFF')
+          .fillColor($r('app.color.primary_color'))
           .margin({ right: 16 })
           .onClick(() => this.startEdit(item))
         
         Image($r('app.media.ic_public_delete'))
           .width(20)
           .height(20)
-          .fillColor('#E74C3C')
+          .fillColor($r('app.color.error_color'))
           .onClick(() => this.deleteItem(item.id))
       }
       .margin({ left: 12 })
     }
     .width('100%')
     .padding(16)
-    .backgroundColor(Color.White)
+    .backgroundColor($r('app.color.card_background'))
     .borderRadius(12)
     .shadow({ radius: 4, color: '#05000000', offsetY: 2 })
   }
@@ -383,14 +391,17 @@ struct AiPreviewPage {
       Text('编辑内容')
         .fontSize(18)
         .fontWeight(FontWeight.Bold)
+        .fontColor($r('app.color.text_primary'))
         .margin({ top: 16, bottom: 8 })
 
       Column({ space: 8 }) {
         Text('正面')
           .fontSize(14)
-          .fontColor('#666666')
+          .fontColor($r('app.color.text_secondary'))
         TextArea({ text: this.editFront })
-          .height(100)
+          .minHeight(100)
+          .backgroundColor($r('app.color.page_background'))
+          .fontColor($r('app.color.text_primary'))
           .onChange((v) => this.editFront = v)
       }
       .alignItems(HorizontalAlign.Start)
@@ -398,15 +409,19 @@ struct AiPreviewPage {
       Column({ space: 8 }) {
         Text('背面')
           .fontSize(14)
-          .fontColor('#666666')
+          .fontColor($r('app.color.text_secondary'))
         TextArea({ text: this.editBack })
-          .height(100)
+          .minHeight(100)
+          .backgroundColor($r('app.color.page_background'))
+          .fontColor($r('app.color.text_primary'))
           .onChange((v) => this.editBack = v)
       }
       .alignItems(HorizontalAlign.Start)
 
       Button('完成')
         .width('100%')
+        .minHeight(48)
+        .backgroundColor($r('app.color.primary_color'))
         .margin({ top: 16 })
         .onClick(() => this.saveEdit())
     }

@@ -100,15 +100,18 @@ export struct TodayPage {
             Text('瞄一眼')
               .fontSize(24)
               .fontWeight(FontWeight.Bold)
+              .fontColor($r('app.color.text_primary'))
             Blank()
             Image($r('app.media.ic_public_settings'))
               .width(24)
               .height(24)
+              .fillColor($r('app.color.text_primary'))
               .onClick(() => {
                 router.pushUrl({ url: 'ui/pages/SettingsPage' });
               })
           }
           .width('100%')
+          .minHeight(56)
           .padding({ left: 20, right: 20, top: 20, bottom: 20 })
 
           if (this.isLoading) {
@@ -138,7 +141,7 @@ export struct TodayPage {
         .alignItems(HorizontalAlign.Center)
       }
       .height('100%')
-      .backgroundColor('#F7F7F7')
+      .backgroundColor($r('app.color.page_background'))
 
       // 悬浮添加按钮 (快速制卡)
       Button({ type: ButtonType.Circle }) {
@@ -150,7 +153,7 @@ export struct TodayPage {
       .width(56)
       .height(56)
       .margin({ right: 24, bottom: 24 })
-      .backgroundColor('#007DFF')
+      .backgroundColor($r('app.color.primary_color'))
       .shadow({ radius: 10, color: '#33007DFF', offsetX: 0, offsetY: 5 })
       .onClick(() => {
         router.pushUrl({ url: 'ui/pages/CreateCardPage' });
@@ -158,6 +161,7 @@ export struct TodayPage {
     }
     .width('100%')
     .height('100%')
+    .backgroundColor($r('app.color.page_background'))
   }
 
   @Builder
@@ -197,7 +201,7 @@ export struct TodayPage {
         
         Button('开始学习')
           .width(160)
-          .height(48)
+          .minHeight(48)
           .backgroundColor(Color.White)
           .fontColor(Color.Black)
           .borderRadius(24)
@@ -230,7 +234,7 @@ export struct TodayPage {
     }
     .width('90%')
     .padding({ top: 48, bottom: 48 })
-    .backgroundColor(hasTask ? '#007DFF' : '#2ECC71')
+    .backgroundColor(hasTask ? $r('app.color.primary_color') : $r('app.color.success_color'))
     .borderRadius(32)
     .shadow({ radius: 20, color: hasTask ? '#33007DFF' : '#332ECC71', offsetX: 0, offsetY: 10 })
     .margin({ bottom: 24 })
@@ -244,14 +248,15 @@ export struct TodayPage {
         Text(this.homeData.streakDays.toString())
           .fontSize(28)
           .fontWeight(FontWeight.Bold)
+          .fontColor($r('app.color.text_primary'))
         Text('连续天数')
           .fontSize(12)
-          .fontColor(Color.Gray)
+          .fontColor($r('app.color.text_tertiary'))
       }
       .layoutWeight(1)
       .alignItems(HorizontalAlign.Center)
 
-      Divider().vertical(true).height(40).color('#EEEEEE')
+      Divider().vertical(true).height(40).color($r('app.color.divider_color'))
 
       // 今日热力格
       Column() {
@@ -263,14 +268,14 @@ export struct TodayPage {
           .margin({ bottom: 4 })
         Text('今日成果')
           .fontSize(12)
-          .fontColor(Color.Gray)
+          .fontColor($r('app.color.text_tertiary'))
       }
       .layoutWeight(1)
       .alignItems(HorizontalAlign.Center)
     }
     .width('90%')
     .padding(20)
-    .backgroundColor(Color.White)
+    .backgroundColor($r('app.color.card_background'))
     .borderRadius(20)
     .margin({ bottom: 24 })
   }
@@ -282,6 +287,7 @@ export struct TodayPage {
         Text('未来 7 天预告')
           .fontSize(16)
           .fontWeight(FontWeight.Bold)
+          .fontColor($r('app.color.text_primary'))
       }
       .width('100%')
       .margin({ bottom: 16 })
@@ -294,17 +300,18 @@ export struct TodayPage {
               .width(8)
               .height(Math.min(40, count * 2 + 2))
               .radius(4)
-              .fill('#E5E5E5')
+              .fill($r('app.color.divider_color'))
               .margin({ bottom: 8 })
             
             Text(count.toString())
               .fontSize(12)
               .fontWeight(FontWeight.Medium)
+              .fontColor($r('app.color.text_primary'))
               .margin({ bottom: 4 })
             
             Text(this.getDayLabel(index))
               .fontSize(10)
-              .fontColor(Color.Gray)
+              .fontColor($r('app.color.text_tertiary'))
           }
           .layoutWeight(1)
         })
@@ -315,17 +322,17 @@ export struct TodayPage {
     }
     .width('90%')
     .padding(20)
-    .backgroundColor(Color.White)
+    .backgroundColor($r('app.color.card_background'))
     .borderRadius(20)
     .margin({ bottom: 40 })
   }
 
-  private getHeatmapColor(count: number): string {
-    if (count === 0) return '#F5F5F5';
-    if (count < 10) return '#D5E8FF';
-    if (count < 30) return '#80BFFF';
-    if (count < 50) return '#3399FF';
-    return '#007DFF';
+  private getHeatmapColor(count: number): Resource {
+    if (count === 0) return $r('app.color.heatmap_level_0');
+    if (count < 10) return $r('app.color.heatmap_level_1');
+    if (count < 30) return $r('app.color.heatmap_level_2');
+    if (count < 50) return $r('app.color.heatmap_level_3');
+    return $r('app.color.heatmap_level_4');
   }
 
   private getDayLabel(offset: number): string {

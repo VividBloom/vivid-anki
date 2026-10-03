@@ -25,7 +25,7 @@ export struct DeleteConfirmDialog {
       Text(this.itemType === 'deck' ? '移除合集' : '移除要点')
         .fontSize(20)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#333333')
+        .fontColor($r('app.color.text_primary'))
         .margin({ bottom: 16 })
 
       // 内容描述
@@ -34,17 +34,17 @@ export struct DeleteConfirmDialog {
           Span('确定要将 ')
           Span(`「${this.itemName}」`)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#333333')
+            .fontColor($r('app.color.text_primary'))
           Span(' 移入回收站吗？')
         }
         .fontSize(16)
-        .fontColor('#666666')
+        .fontColor($r('app.color.text_secondary'))
         .textAlign(TextAlign.Center)
 
         if (this.itemType === 'deck' && this.cardCount > 0) {
           Text(`合集内的 ${this.cardCount} 个要点会一起移入`)
             .fontSize(14)
-            .fontColor('#999999')
+            .fontColor($r('app.color.text_tertiary'))
         }
       }
       .width('100%')
@@ -56,14 +56,14 @@ export struct DeleteConfirmDialog {
         Image($r('app.media.ic_public_info'))
           .width(16)
           .height(16)
-          .fillColor('#2ECC71')
+          .fillColor($r('app.color.success_color'))
           .margin({ right: 6 })
         Text('复习记录不会丢失')
           .fontSize(14)
-          .fontColor('#2ECC71')
+          .fontColor($r('app.color.success_color'))
       }
       .padding({ left: 12, right: 12, top: 6, bottom: 6 })
-      .backgroundColor('#EEFBF3')
+      .backgroundColor($r('app.color.success_light'))
       .borderRadius(8)
       .margin({ bottom: 32 })
 
@@ -71,17 +71,17 @@ export struct DeleteConfirmDialog {
       Row({ space: 16 }) {
         Button('取消')
           .layoutWeight(1)
-          .height(48)
-          .backgroundColor('#F0F0F0')
-          .fontColor('#666666')
+          .minHeight(48)
+          .backgroundColor($r('app.color.divider_color'))
+          .fontColor($r('app.color.text_secondary'))
           .onClick(() => {
             this.controller.close();
           })
 
         Button('移入回收站')
           .layoutWeight(1)
-          .height(48)
-          .backgroundColor('#FF4D4F')
+          .minHeight(48)
+          .backgroundColor($r('app.color.error_color'))
           .fontColor(Color.White)
           .onClick(() => {
             if (this.onActionConfirm()) {
@@ -92,7 +92,7 @@ export struct DeleteConfirmDialog {
       .width('100%')
     }
     .padding(24)
-    .backgroundColor(Color.White)
+    .backgroundColor($r('app.color.card_background'))
     .borderRadius(24)
     .width('90%')
   }

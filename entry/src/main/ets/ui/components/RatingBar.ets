@@ -20,32 +20,32 @@ export struct RatingBar {
       // 第一行：左撇子模式下交换位置
       GridItem() {
         if (this.isLeftHanded) {
-          this.RatingButton(Rating.Hard, '有点难', '#FF9800')
+          this.RatingButton(Rating.Hard, '有点难', $r('app.color.rating_hard'))
         } else {
-          this.RatingButton(Rating.Again, '再来一次', '#F44336')
+          this.RatingButton(Rating.Again, '再来一次', $r('app.color.rating_again'))
         }
       }
       GridItem() {
         if (this.isLeftHanded) {
-          this.RatingButton(Rating.Again, '再来一次', '#F44336')
+          this.RatingButton(Rating.Again, '再来一次', $r('app.color.rating_again'))
         } else {
-          this.RatingButton(Rating.Hard, '有点难', '#FF9800')
+          this.RatingButton(Rating.Hard, '有点难', $r('app.color.rating_hard'))
         }
       }
       
       // 第二行：左撇子模式下交换位置
       GridItem() {
         if (this.isLeftHanded) {
-          this.RatingButton(Rating.Easy, '太简单', '#2196F3')
+          this.RatingButton(Rating.Easy, '太简单', $r('app.color.rating_easy'))
         } else {
-          this.RatingButton(Rating.Good, '记得', '#4CAF50')
+          this.RatingButton(Rating.Good, '记得', $r('app.color.rating_good'))
         }
       }
       GridItem() {
         if (this.isLeftHanded) {
-          this.RatingButton(Rating.Good, '记得', '#4CAF50')
+          this.RatingButton(Rating.Good, '记得', $r('app.color.rating_good'))
         } else {
-          this.RatingButton(Rating.Easy, '太简单', '#2196F3')
+          this.RatingButton(Rating.Easy, '太简单', $r('app.color.rating_easy'))
         }
       }
     }
@@ -54,20 +54,21 @@ export struct RatingBar {
     .columnsGap(12)
     .rowsGap(12)
     .width('100%')
-    .height(140)
+    .minHeight(160)
     .padding(16)
   }
 
   @Builder
-  RatingButton(rating: Rating, label: string, color: string) {
+  RatingButton(rating: Rating, label: string, color: Resource) {
     Button() {
       Text(label)
         .fontSize(16)
         .fontColor(Color.White)
         .fontWeight(FontWeight.Medium)
+        .textAlign(TextAlign.Center)
     }
     .width('100%')
-    .height('100%')
+    .minHeight(64)
     .backgroundColor(color)
     .borderRadius(12)
     .onClick(() => {

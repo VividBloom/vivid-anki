@@ -160,9 +160,10 @@ struct ReviewPage {
         Image($r('app.media.ic_public_sound'))
           .width(24)
           .height(24)
+          .fillColor($r('app.color.primary_color'))
       }
       .variant(ButtonVariant.Circle)
-      .backgroundColor('#E3F2FD')
+      .backgroundColor($r('app.color.heatmap_level_1'))
       .margin(4)
       .onClick((e) => {
         e.stopPropagation();
@@ -323,18 +324,18 @@ struct ReviewPage {
           Row() {
             Progress({ value: this.currentIndex, total: this.queue.length, type: ProgressType.Linear })
               .layoutWeight(1)
-              .color(Color.Blue)
+              .color($r('app.color.primary_color'))
             
             Text(`还剩 ${this.queue.length - this.currentIndex} 张`)
               .fontSize(14)
-              .fontColor(Color.Gray)
+              .fontColor($r('app.color.text_tertiary'))
               .margin({ left: 12, right: 12 })
 
             Button() {
               Image($r('app.media.ic_public_undo'))
                 .width(20)
                 .height(20)
-                .fillColor(this.currentIndex > 0 ? Color.Black : Color.Gray)
+                .fillColor(this.currentIndex > 0 ? $r('app.color.text_primary') : $r('app.color.text_tertiary'))
             }
             .variant(ButtonVariant.Plain)
             .enabled(this.currentIndex > 0)
@@ -343,6 +344,7 @@ struct ReviewPage {
             })
           }
           .width('100%')
+          .minHeight(56)
           .padding(16)
         }
 
@@ -351,15 +353,22 @@ struct ReviewPage {
           Column() {
             if (!this.isFlipped) {
               // 正面
-              Text(this.typeService.getRenderedContent(this.currentCard.front, this.currentCard.back, this.currentCard.cardType, false).question)
+              Scroll() {
+                Column() {
+                  Text(this.typeService.getRenderedContent(this.currentCard.front, this.currentCard.back, this.currentCard.cardType, false).question)
                     .fontSize(32)
                     .fontWeight(FontWeight.Bold)
+                    .fontColor($r('app.color.text_primary'))
                     .textAlign(TextAlign.Center)
                     .padding(24)
                   
                   if (this.currentCard.mediaRefs && this.currentCard.mediaRefs.length > 0) {
                     this.MediaSection(this.currentCard.mediaRefs)
                   }
+                }
+                .width('100%')
+              }
+              .layoutWeight(1)
             } else {
               // 背面
               Scroll() {
@@ -367,20 +376,21 @@ struct ReviewPage {
                   Text(this.typeService.getRenderedContent(this.currentCard.front, this.currentCard.back, this.currentCard.cardType, true).question)
                     .fontSize(24)
                     .fontWeight(FontWeight.Medium)
-                    .fontColor(Color.Gray)
+                    .fontColor($r('app.color.text_secondary'))
                     .margin({ bottom: 20 })
                   
-                  Divider().color('#EEEEEE').margin({ bottom: 20 })
+                  Divider().color($r('app.color.divider_color')).margin({ bottom: 20 })
                   
                   Text(this.typeService.getRenderedContent(this.currentCard.front, this.currentCard.back, this.currentCard.cardType, true).answer)
                     .fontSize(32)
                     .fontWeight(FontWeight.Bold)
+                    .fontColor($r('app.color.text_primary'))
                     .textAlign(TextAlign.Center)
                   
                   if (this.currentCard.extra) {
                     Text(this.currentCard.extra)
                       .fontSize(16)
-                      .fontColor(Color.Gray)
+                      .fontColor($r('app.color.text_secondary'))
                       .margin({ top: 24 })
                       .fontStyle(FontStyle.Italic)
                   }
@@ -392,8 +402,8 @@ struct ReviewPage {
             }
           }
           .width('90%')
-          .height('70%')
-          .backgroundColor(Color.White)
+          .maxHeight('80%')
+          .backgroundColor($r('app.color.card_background'))
           .borderRadius(24)
           .shadow({ radius: 20, color: '#1A000000', offsetX: 0, offsetY: 8 })
           .justifyContent(FlexAlign.Center)
@@ -429,7 +439,7 @@ struct ReviewPage {
         } else {
           Text('点击屏幕或上滑查看答案')
             .fontSize(14)
-            .fontColor(Color.Gray)
+            .fontColor($r('app.color.text_tertiary'))
             .margin({ bottom: 40 })
         }
 
@@ -443,7 +453,7 @@ struct ReviewPage {
             Blank()
             
             Text(this.snackbarAction)
-              .fontColor('#007DFF')
+              .fontColor($r('app.color.primary_color'))
               .fontSize(14)
               .fontWeight(FontWeight.Medium)
               .onClick(() => {
@@ -457,7 +467,7 @@ struct ReviewPage {
           }
           .width('90%')
           .padding({ left: 16, right: 16, top: 12, bottom: 12 })
-          .backgroundColor('#333333')
+          .backgroundColor($r('app.color.snackbar_background'))
           .borderRadius(8)
           .position({ x: '5%', y: '85%' })
           .transition({ type: TransitionType.Insert, opacity: 0, translate: { y: 20 } })
@@ -466,7 +476,7 @@ struct ReviewPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#F7F7F7')
+    .backgroundColor($r('app.color.page_background'))
   }
 
   private flipCard() {

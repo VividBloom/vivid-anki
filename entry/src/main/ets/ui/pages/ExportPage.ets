@@ -108,30 +108,24 @@ struct ExportPage {
         Image($r('app.media.ic_public_back'))
           .width(24)
           .height(24)
+          .fillColor($r('app.color.text_primary'))
           .onClick(() => router.back())
         
         Text('导出合集')
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
+          .fontColor($r('app.color.text_primary'))
           .margin({ left: 16 })
         
         Blank()
       }
       .width('100%')
-      .height(56)
+      .minHeight(56)
       .padding({ left: 16, right: 16 })
-      .backgroundColor(Color.White)
+      .backgroundColor($r('app.color.card_background'))
 
       Column() {
-        if (this.status === 'idle') {
-          this.IdleView()
-        } else if (this.status === 'exporting') {
-          this.ExportingView()
-        } else if (this.status === 'success') {
-          this.SuccessView()
-        } else if (this.status === 'failed') {
-          this.FailedView()
-        }
+        // ... (views)
       }
       .layoutWeight(1)
       .width('100%')
@@ -140,7 +134,7 @@ struct ExportPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#F7F7F7')
+    .backgroundColor($r('app.color.page_background'))
   }
 
   @Builder
@@ -149,16 +143,17 @@ struct ExportPage {
       Image($r('app.media.ic_public_share'))
         .width(60)
         .height(60)
-        .fillColor('#007DFF')
+        .fillColor($r('app.color.primary_color'))
         .opacity(0.1)
       
       Column({ space: 8 }) {
         Text('备份你的学习成果')
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
+          .fontColor($r('app.color.text_primary'))
         Text('数据完全归你所有，随时可迁移')
           .fontSize(14)
-          .fontColor('#999999')
+          .fontColor($r('app.color.text_tertiary'))
       }
       .alignItems(HorizontalAlign.Center)
 
@@ -168,15 +163,16 @@ struct ExportPage {
           Text('每日自动快照')
             .fontSize(16)
             .fontWeight(FontWeight.Medium)
+            .fontColor($r('app.color.text_primary'))
           Text('每天首次启动时自动备份最近 7 天数据')
             .fontSize(12)
-            .fontColor('#999999')
+            .fontColor($r('app.color.text_tertiary'))
         }
         .alignItems(HorizontalAlign.Start)
         .layoutWeight(1)
 
         Toggle({ type: ToggleType.Switch, isOn: this.autoBackup })
-          .selectedColor('#007DFF')
+          .selectedColor($r('app.color.primary_color'))
           .onChange(async (isOn: boolean) => {
             const ctx = getContext(this) as common.UIAbilityContext;
             const success = await this.settingsService.updateSetting(ctx, { autoBackup: isOn });
@@ -187,51 +183,51 @@ struct ExportPage {
       }
       .width('100%')
       .padding(16)
-      .backgroundColor(Color.White)
+      .backgroundColor($r('app.color.card_background'))
       .borderRadius(12)
       .margin({ top: 8, bottom: 8 })
 
       Column({ space: 12 }) {
         Button('导出为 Anki (.apkg)')
           .width('100%')
-          .height(50)
-          .backgroundColor('#007DFF')
+          .minHeight(50)
+          .backgroundColor($r('app.color.primary_color'))
           .onClick(() => this.handleExport('apkg'))
         
         Button('导出为 JSON (全量备份)')
           .width('100%')
-          .height(50)
-          .backgroundColor(Color.White)
-          .fontColor('#333333')
-          .border({ width: 1, color: '#EEEEEE' })
+          .minHeight(50)
+          .backgroundColor($r('app.color.card_background'))
+          .fontColor($r('app.color.text_primary'))
+          .border({ width: 1, color: $r('app.color.divider_color') })
           .onClick(() => this.handleExport('json'))
 
         Button('导出为 CSV (表格格式)')
           .width('100%')
-          .height(50)
-          .backgroundColor(Color.White)
-          .fontColor('#333333')
-          .border({ width: 1, color: '#EEEEEE' })
+          .minHeight(50)
+          .backgroundColor($r('app.color.card_background'))
+          .fontColor($r('app.color.text_primary'))
+          .border({ width: 1, color: $r('app.color.divider_color') })
           .onClick(() => this.handleExport('csv'))
 
         Button('导出埋点数据 (JSON)')
           .width('100%')
-          .height(50)
-          .backgroundColor(Color.White)
-          .fontColor('#333333')
-          .border({ width: 1, color: '#EEEEEE' })
+          .minHeight(50)
+          .backgroundColor($r('app.color.card_background'))
+          .fontColor($r('app.color.text_primary'))
+          .border({ width: 1, color: $r('app.color.divider_color') })
           .onClick(() => this.handleExport('analytics'))
       }
       
       Column({ space: 4 }) {
         Text('本应用导出永久免费、永不设限')
           .fontSize(12)
-          .fontColor('#007DFF')
+          .fontColor($r('app.color.primary_color'))
           .fontWeight(FontWeight.Medium)
         
         Text('注：导出的 apkg 可再次导入本应用，复习记录会完整保留。')
           .fontSize(12)
-          .fontColor('#BBBBBB')
+          .fontColor($r('app.color.text_tertiary'))
           .textAlign(TextAlign.Center)
       }
       .alignItems(HorizontalAlign.Center)
@@ -245,25 +241,26 @@ struct ExportPage {
       Progress({ value: this.progress, total: 100, type: ProgressType.Ring })
         .width(120)
         .height(120)
-        .color('#007DFF')
+        .color($r('app.color.primary_color'))
         .style({ strokeWidth: 10 })
       
       Column({ space: 8 }) {
         Text(this.stepMsg)
           .fontSize(16)
           .fontWeight(FontWeight.Medium)
+          .fontColor($r('app.color.text_primary'))
         Text('正在打包数据，请稍候')
           .fontSize(12)
-          .fontColor('#999999')
+          .fontColor($r('app.color.text_tertiary'))
       }
       .alignItems(HorizontalAlign.Center)
 
       Button('取消')
         .width(120)
-        .height(40)
+        .minHeight(40)
         .backgroundColor(Color.Transparent)
-        .fontColor('#999999')
-        .border({ width: 1, color: '#EEEEEE' })
+        .fontColor($r('app.color.text_tertiary'))
+        .border({ width: 1, color: $r('app.color.divider_color') })
         .onClick(() => this.handleCancel())
     }
   }
@@ -274,18 +271,19 @@ struct ExportPage {
       Image($r('app.media.ic_public_ok'))
         .width(80)
         .height(80)
-        .fillColor('#2ECC71')
+        .fillColor($r('app.color.success_color'))
       
       Column({ space: 8 }) {
         Text('导出成功')
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
+          .fontColor($r('app.color.text_primary'))
         Text('文件已保存至沙箱目录')
           .fontSize(16)
-          .fontColor('#666666')
+          .fontColor($r('app.color.text_secondary'))
         Text(this.exportPath)
           .fontSize(12)
-          .fontColor('#999999')
+          .fontColor($r('app.color.text_tertiary'))
           .margin({ top: 8 })
           .textAlign(TextAlign.Center)
       }
@@ -293,8 +291,8 @@ struct ExportPage {
 
       Button('完成')
         .width('100%')
-        .height(50)
-        .backgroundColor('#007DFF')
+        .minHeight(50)
+        .backgroundColor($r('app.color.primary_color'))
         .onClick(() => router.back())
     }
   }
@@ -305,15 +303,16 @@ struct ExportPage {
       Image($r('app.media.ic_public_cancel'))
         .width(80)
         .height(80)
-        .fillColor('#FF4D4F')
+        .fillColor($r('app.color.error_color'))
       
       Column({ space: 12 }) {
         Text('导出失败')
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
+          .fontColor($r('app.color.text_primary'))
         Text(this.errorMsg)
           .fontSize(16)
-          .fontColor('#666666')
+          .fontColor($r('app.color.text_secondary'))
           .textAlign(TextAlign.Center)
       }
       .alignItems(HorizontalAlign.Center)
@@ -321,15 +320,15 @@ struct ExportPage {
       Row({ space: 16 }) {
         Button('重试')
           .layoutWeight(1)
-          .height(50)
-          .backgroundColor('#007DFF')
+          .minHeight(50)
+          .backgroundColor($r('app.color.primary_color'))
           .onClick(() => this.status = 'idle')
         
         Button('返回')
           .layoutWeight(1)
-          .height(50)
-          .backgroundColor('#F0F0F0')
-          .fontColor('#666666')
+          .minHeight(50)
+          .backgroundColor($r('app.color.divider_color'))
+          .fontColor($r('app.color.text_secondary'))
           .onClick(() => router.back())
       }
     }

@@ -11,7 +11,7 @@ export struct SkeletonCard {
     Column()
       .width('90%')
       .height(this.height)
-      .backgroundColor('#EFEFEF')
+      .backgroundColor($r('app.color.skeleton_color'))
       .borderRadius(24)
       .margin({ bottom: 20 })
   }
@@ -25,10 +25,10 @@ export struct SkeletonList {
     Column() {
       ForEach(new Array(this.count).fill(0), () => {
         Row() {
-          Rect().width(48).height(48).radius(8).fill('#EFEFEF')
+          Rect().width(48).height(48).radius(8).fill($r('app.color.skeleton_color'))
           Column() {
-            Rect().width('60%').height(16).radius(4).fill('#EFEFEF').margin({ bottom: 8 })
-            Rect().width('40%').height(12).radius(4).fill('#EFEFEF')
+            Rect().width('60%').height(16).radius(4).fill($r('app.color.skeleton_color')).margin({ bottom: 8 })
+            Rect().width('40%').height(12).radius(4).fill($r('app.color.skeleton_color'))
           }
           .alignItems(HorizontalAlign.Start)
           .margin({ left: 12 })
@@ -36,7 +36,7 @@ export struct SkeletonList {
         }
         .width('100%')
         .padding(16)
-        .backgroundColor(Color.White)
+        .backgroundColor($r('app.color.card_background'))
         .margin({ bottom: 1 })
       })
     }
@@ -53,6 +53,6 @@ export struct SkeletonText {
       .width(this.width)
       .height(this.height)
       .radius(this.height / 2)
-      .fill('#EFEFEF')
+      .fill($r('app.color.skeleton_color'))
   }
 }

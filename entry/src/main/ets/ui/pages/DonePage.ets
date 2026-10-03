@@ -37,16 +37,17 @@ struct DonePage {
       // 顶部留白
       Blank().height('15%')
 
-      // 核心反馈图标（可选，此处用文字代替）
+      // 核心反馈图标
       Column() {
         Text('已全部完成')
           .fontSize(28)
           .fontWeight(FontWeight.Bold)
+          .fontColor($r('app.color.text_primary'))
           .margin({ bottom: 8 })
         
         Text('今天的任务已顺利结束')
           .fontSize(16)
-          .fontColor(Color.Gray)
+          .fontColor($r('app.color.text_secondary'))
       }
       .margin({ bottom: 60 })
 
@@ -58,7 +59,7 @@ struct DonePage {
       }
       .width('90%')
       .justifyContent(FlexAlign.SpaceAround)
-      .backgroundColor(Color.White)
+      .backgroundColor($r('app.color.card_background'))
       .borderRadius(20)
       .padding({ top: 24, bottom: 24 })
       .shadow({ radius: 15, color: '#0A000000', offsetX: 0, offsetY: 4 })
@@ -68,10 +69,10 @@ struct DonePage {
       // 底部收尾按钮
       Button('完成')
         .width('80%')
-        .height(50)
+        .minHeight(50)
         .fontSize(18)
         .fontWeight(FontWeight.Medium)
-        .backgroundColor(Color.Black)
+        .backgroundColor($r('app.color.primary_color'))
         .fontColor(Color.White)
         .borderRadius(25)
         .margin({ bottom: 60 })
@@ -81,7 +82,7 @@ struct DonePage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#F7F7F7')
+    .backgroundColor($r('app.color.page_background'))
   }
 
   @Builder
@@ -90,11 +91,12 @@ struct DonePage {
       Text(value)
         .fontSize(24)
         .fontWeight(FontWeight.Bold)
+        .fontColor($r('app.color.text_primary'))
         .margin({ bottom: 4 })
       
       Text(label)
         .fontSize(12)
-        .fontColor(Color.Gray)
+        .fontColor($r('app.color.text_secondary'))
     }
     .alignItems(HorizontalAlign.Center)
   }
