@@ -67,7 +67,30 @@ struct AboutPage {
           .padding(20)
           .backgroundColor($r('app.color.card_background'))
           .borderRadius(20)
-          .margin({ top: 60 })
+          .margin({ top: 32 })
+
+          Column() {
+            Text('备案信息')
+              .fontSize(16)
+              .fontWeight(FontWeight.Bold)
+              .fontColor($r('app.color.text_primary'))
+              .width('100%')
+              .margin({ bottom: 12 })
+            
+            Text('开发者：Vivid Lab')
+              .fontSize(14)
+              .fontColor($r('app.color.text_secondary'))
+              .margin({ bottom: 8 })
+            
+            Text('备案号：[待填入 ICP 备案号]')
+              .fontSize(14)
+              .fontColor($r('app.color.text_secondary'))
+          }
+          .width('90%')
+          .padding(20)
+          .backgroundColor($r('app.color.card_background'))
+          .borderRadius(20)
+          .margin({ top: 16 })
 
           Blank().layoutWeight(1)
           
