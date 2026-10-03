@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>瞄一眼 - 应用市场 Banner</title>
+    <style>
+        :root {
+            --harmony-brand: #007DFF;
+            --harmony-bg-gradient: linear-gradient(135deg, #007DFF 0%, #0056B3 100%);
+            --harmony-font-on-brand: #FFFFFF;
+            --harmony-radius-xl: 32px;
+            --harmony-shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "HarmonyHeiTi", "HarmonyOS Sans SC", sans-serif;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #F1F3F5;
+        }
+
+        /* 2048x1152 Banner Container */
+        .banner {
+            position: relative;
+            width: 2048px;
+            height: 1152px;
+            background: var(--harmony-bg-gradient);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transform: scale(0.4); /* 缩放显示，实际尺寸为 2048x1152 */
+            box-shadow: 0 50px 100px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 背景装饰 */
+        .banner::before {
+            content: '';
+            position: absolute;
+            top: -200px;
+            right: -200px;
+            width: 800px;
+            height: 800px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            filter: blur(100px);
+        }
+
+        .banner::after {
+            content: '';
+            position: absolute;
+            bottom: -150px;
+            left: -150px;
+            width: 600px;
+            height: 600px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            filter: blur(80px);
+        }
+
+        .logo-container {
+            position: relative;
+            z-index: 10;
+            margin-bottom: 64px;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .logo {
+            width: 480px;
+            height: 480px;
+            border-radius: 100px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+            background: #FFFFFF;
+            padding: 20px;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .title {
+            font-size: 160px;
+            font-weight: 700;
+            color: var(--harmony-font-on-brand);
+            letter-spacing: 8px;
+            margin-bottom: 24px;
+            z-index: 10;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .tagline {
+            font-size: 64px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 80px;
+            z-index: 10;
+        }
+
+        .features {
+            display: flex;
+            gap: 48px;
+            z-index: 10;
+        }
+
+        .feature-item {
+            padding: 20px 48px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 60px;
+            color: #FFFFFF;
+            font-size: 36px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 60px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 28px;
+            z-index: 10;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="banner">
+        <div class="logo-container">
+            <div class="logo">
+                <img src="assets/logo.png" alt="瞄一眼 Logo">
+            </div>
+        </div>
+        <h1 class="title">瞄一眼</h1>
+        <p class="tagline">鸿蒙原生 · 极致流畅 · 无压学习</p>
+        <div class="features">
+            <div class="feature-item">FSRS-6 算法</div>
+            <div class="feature-item">30 天回收站</div>
+            <div class="feature-item">数据主权</div>
+            <div class="feature-item">深色模式</div>
+        </div>
+        <div class="footer">
+            Designed for HarmonyOS | 开发者：Blues | 基于 BSD-3 协议自研调度算法
+        </div>
+    </div>
+</body>
+</html>

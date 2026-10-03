@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>瞄一眼 - 截图 2 (复习)</title>
+    <style>
+        :root {
+            --harmony-brand: #007DFF;
+            --harmony-bg: #FFFFFF;
+            --harmony-card-bg: #F8F9FA;
+            --harmony-font-primary: rgba(0, 0, 0, 0.9);
+            --harmony-font-secondary: rgba(0, 0, 0, 0.6);
+            --harmony-radius-lg: 32px;
+            --btn-again: #FDECEC;
+            --btn-hard: #FFF4E5;
+            --btn-good: #E8F5E9;
+            --btn-easy: #E3F2FD;
+            --text-again: #D32F2F;
+            --text-hard: #ED6C02;
+            --text-good: #2E7D32;
+            --text-easy: #1976D2;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "HarmonyHeiTi", "HarmonyOS Sans SC", sans-serif;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #E0E0E0;
+        }
+
+        .screen {
+            position: relative;
+            width: 1080px;
+            height: 2340px;
+            background: var(--harmony-bg);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transform: scale(0.3);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.2);
+            border: 12px solid #333;
+            border-radius: 60px;
+        }
+
+        .status-bar {
+            height: 120px;
+            padding: 0 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 42px;
+        }
+
+        .nav-header {
+            height: 168px;
+            padding: 0 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-back { font-size: 64px; }
+        .nav-title { font-size: 54px; font-weight: 600; }
+        .nav-more { font-size: 64px; }
+
+        .progress-bar {
+            height: 8px;
+            background: #EEE;
+            margin: 0 60px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            width: 65%;
+            height: 100%;
+            background: var(--harmony-brand);
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 80px 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .question-card {
+            width: 100%;
+            padding: 100px 60px;
+            background: var(--harmony-card-bg);
+            border-radius: var(--harmony-radius-lg);
+            margin-bottom: 60px;
+        }
+
+        .question-text {
+            font-size: 72px;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--harmony-font-primary);
+        }
+
+        .answer-area {
+            width: 100%;
+            margin-top: 40px;
+            padding-top: 80px;
+            border-top: 2px dashed #DDD;
+        }
+
+        .answer-text {
+            font-size: 64px;
+            color: var(--harmony-font-secondary);
+            line-height: 1.6;
+        }
+
+        .rating-container {
+            padding: 60px;
+            background: #F1F3F5;
+            border-top-left-radius: 60px;
+            border-top-right-radius: 60px;
+        }
+
+        .rating-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        .rating-btn {
+            height: 200px;
+            border-radius: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-label { font-size: 48px; font-weight: 600; margin-bottom: 12px; }
+        .btn-time { font-size: 32px; opacity: 0.8; }
+
+        .btn-again { background: var(--btn-again); color: var(--text-again); }
+        .btn-hard { background: var(--btn-hard); color: var(--text-hard); }
+        .btn-good { background: var(--btn-good); color: var(--text-good); }
+        .btn-easy { background: var(--btn-easy); color: var(--text-easy); }
+
+        .undo-action {
+            display: flex;
+            justify-content: center;
+            margin-top: 40px;
+            color: var(--harmony-brand);
+            font-size: 42px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="screen">
+        <div class="status-bar">
+            <span>9:41</span>
+            <div style="display: flex; gap: 20px;">
+                <span>📶</span>
+                <span>🔋</span>
+            </div>
+        </div>
+
+        <div class="nav-header">
+            <div class="nav-back">✕</div>
+            <div class="nav-title">鸿蒙开发进阶</div>
+            <div class="nav-more">⋯</div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+
+        <div class="content-area">
+            <div class="question-card">
+                <p class="question-text">什么是 ArkUI 的<br>状态管理 V2？</p>
+            </div>
+            <div class="answer-area">
+                <p class="answer-text">点击显示解析</p>
+            </div>
+        </div>
+
+        <div class="rating-container">
+            <div class="rating-grid">
+                <div class="rating-btn btn-again">
+                    <span class="btn-label">重来</span>
+                    <span class="btn-time">&lt; 1 分钟</span>
+                </div>
+                <div class="rating-btn btn-hard">
+                    <span class="btn-label">困难</span>
+                    <span class="btn-time">2 天</span>
+                </div>
+                <div class="rating-btn btn-good">
+                    <span class="btn-label">良好</span>
+                    <span class="btn-time">4 天</span>
+                </div>
+                <div class="rating-btn btn-easy">
+                    <span class="btn-label">简单</span>
+                    <span class="btn-time">7 天</span>
+                </div>
+            </div>
+            <div class="undo-action">撤销上一步评分</div>
+        </div>
+
+        <div style="height: 120px; display: flex; justify-content: center; align-items: center; background: #F1F3F5;">
+            <div style="width: 400px; height: 15px; background: rgba(0, 0, 0, 0.1); border-radius: 10px;"></div>
+        </div>
+    </div>
+</body>
+</html>

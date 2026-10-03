@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>瞄一眼 - 截图 4 (回收站)</title>
+    <style>
+        :root {
+            --harmony-brand: #007DFF;
+            --harmony-bg: #F1F3F5;
+            --harmony-card-bg: #FFFFFF;
+            --harmony-font-primary: rgba(0, 0, 0, 0.9);
+            --harmony-font-secondary: rgba(0, 0, 0, 0.6);
+            --harmony-radius-lg: 32px;
+            --warning-color: #FF6B00;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "HarmonyHeiTi", "HarmonyOS Sans SC", sans-serif;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #E0E0E0;
+        }
+
+        .screen {
+            position: relative;
+            width: 1080px;
+            height: 2340px;
+            background: var(--harmony-bg);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transform: scale(0.3);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.2);
+            border: 12px solid #333;
+            border-radius: 60px;
+        }
+
+        .status-bar {
+            height: 120px;
+            padding: 0 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 42px;
+        }
+
+        .nav-header {
+            height: 168px;
+            padding: 0 60px;
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .nav-back { font-size: 64px; }
+        .nav-title { font-size: 64px; font-weight: 700; color: var(--harmony-font-primary); }
+
+        .info-banner {
+            margin: 40px 60px;
+            padding: 48px;
+            background: #E7F3FF;
+            border-radius: 24px;
+            color: var(--harmony-brand);
+            font-size: 36px;
+            line-height: 1.5;
+        }
+
+        .trash-list {
+            flex: 1;
+            padding: 20px 60px;
+        }
+
+        .trash-item {
+            margin-bottom: 40px;
+            padding: 60px;
+            background: var(--harmony-card-bg);
+            border-radius: var(--harmony-radius-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .item-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .item-name {
+            font-size: 54px;
+            font-weight: 600;
+            color: var(--harmony-font-primary);
+        }
+
+        .item-meta {
+            font-size: 36px;
+            color: var(--harmony-font-secondary);
+            margin-top: 8px;
+        }
+
+        .days-left {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .days-value {
+            font-size: 42px;
+            font-weight: 600;
+            color: var(--warning-color);
+        }
+
+        .days-label {
+            font-size: 28px;
+            color: var(--harmony-font-secondary);
+            margin-top: 4px;
+        }
+
+        .restore-btn {
+            margin-top: 24px;
+            padding: 16px 40px;
+            background: #F1F3F5;
+            border-radius: 40px;
+            font-size: 36px;
+            font-weight: 500;
+            color: var(--harmony-brand);
+        }
+
+        .bottom-tip {
+            padding: 60px;
+            text-align: center;
+            font-size: 36px;
+            color: var(--harmony-font-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="screen">
+        <div class="status-bar">
+            <span>9:41</span>
+            <div style="display: flex; gap: 20px;">
+                <span>📶</span>
+                <span>🔋</span>
+            </div>
+        </div>
+
+        <div class="nav-header">
+            <div class="nav-back">←</div>
+            <div class="nav-title">回收站</div>
+        </div>
+
+        <div class="info-banner">
+            已移入回收站的合集与要点将保留 30 天，在此期间你可以随时恢复。彻底删除后复习记录仍会保留。
+        </div>
+
+        <div class="trash-list">
+            <div class="trash-item">
+                <div class="item-info">
+                    <span class="item-name">过期的临时测试</span>
+                    <span class="item-meta">120 个要点 · 2026-10-01 删除</span>
+                    <div class="restore-btn">恢复合集</div>
+                </div>
+                <div class="days-left">
+                    <span class="days-value">28 天</span>
+                    <span class="days-label">剩余时间</span>
+                </div>
+            </div>
+
+            <div class="trash-item">
+                <div class="item-info">
+                    <span class="item-name">错误的医学常识</span>
+                    <span class="item-meta">15 个要点 · 2026-09-28 删除</span>
+                    <div class="restore-btn">恢复合集</div>
+                </div>
+                <div class="days-left">
+                    <span class="days-value">25 天</span>
+                    <span class="days-label">剩余时间</span>
+                </div>
+            </div>
+
+            <div class="trash-item">
+                <div class="item-info">
+                    <span class="item-name">什么是 FSRS？</span>
+                    <span class="item-meta">单个要点 · 2026-10-02 删除</span>
+                    <div class="restore-btn">恢复要点</div>
+                </div>
+                <div class="days-left">
+                    <span class="days-value" style="color: #FF3B30;">5 天</span>
+                    <span class="days-label">即将清理</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-tip">
+            删除超过 30 天的项目将被自动清理
+        </div>
+
+        <div style="height: 120px; display: flex; justify-content: center; align-items: center;">
+            <div style="width: 400px; height: 15px; background: rgba(0, 0, 0, 0.1); border-radius: 10px;"></div>
+        </div>
+    </div>
+</body>
+</html>

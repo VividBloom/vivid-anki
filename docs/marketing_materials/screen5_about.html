@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>瞄一眼 - 截图 5 (关于)</title>
+    <style>
+        :root {
+            --harmony-brand: #007DFF;
+            --harmony-bg: #FFFFFF;
+            --harmony-font-primary: rgba(0, 0, 0, 0.9);
+            --harmony-font-secondary: rgba(0, 0, 0, 0.6);
+            --harmony-radius-lg: 32px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "HarmonyHeiTi", "HarmonyOS Sans SC", sans-serif;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #E0E0E0;
+        }
+
+        .screen {
+            position: relative;
+            width: 1080px;
+            height: 2340px;
+            background: var(--harmony-bg);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform: scale(0.3);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.2);
+            border: 12px solid #333;
+            border-radius: 60px;
+        }
+
+        .status-bar {
+            width: 100%;
+            height: 120px;
+            padding: 0 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 42px;
+        }
+
+        .nav-header {
+            width: 100%;
+            height: 168px;
+            padding: 0 60px;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-back { font-size: 64px; margin-right: 40px; }
+        .nav-title { font-size: 64px; font-weight: 700; color: var(--harmony-font-primary); }
+
+        .logo-section {
+            margin-top: 160px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .logo {
+            width: 360px;
+            height: 360px;
+            border-radius: 80px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin-bottom: 60px;
+            background: #FFF;
+            padding: 15px;
+        }
+
+        .logo img { width: 100%; height: 100%; object-fit: contain; }
+
+        .app-name {
+            font-size: 96px;
+            font-weight: 700;
+            color: var(--harmony-font-primary);
+            margin-bottom: 20px;
+        }
+
+        .version {
+            font-size: 42px;
+            color: var(--harmony-font-secondary);
+            margin-bottom: 120px;
+        }
+
+        .info-list {
+            width: 100%;
+            padding: 0 60px;
+        }
+
+        .info-item {
+            padding: 60px 0;
+            border-bottom: 1px solid #EEE;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .info-label { font-size: 48px; color: var(--harmony-font-primary); font-weight: 500; }
+        .info-value { font-size: 42px; color: var(--harmony-font-secondary); }
+
+        .description {
+            margin-top: 120px;
+            padding: 0 100px;
+            text-align: center;
+            font-size: 42px;
+            line-height: 1.8;
+            color: var(--harmony-font-secondary);
+        }
+
+        .highlight {
+            color: var(--harmony-brand);
+            font-weight: 600;
+        }
+
+        .copyright {
+            position: absolute;
+            bottom: 120px;
+            font-size: 32px;
+            color: rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="screen">
+        <div class="status-bar">
+            <span>9:41</span>
+            <div style="display: flex; gap: 20px;">
+                <span>📶</span>
+                <span>🔋</span>
+            </div>
+        </div>
+
+        <div class="nav-header">
+            <div class="nav-back">←</div>
+            <div class="nav-title">关于</div>
+        </div>
+
+        <div class="logo-section">
+            <div class="logo">
+                <img src="assets/logo.png" alt="瞄一眼 Logo">
+            </div>
+            <h1 class="app-name">瞄一眼</h1>
+            <p class="version">版本 1.0.0 (Build 1003)</p>
+        </div>
+
+        <div class="info-list">
+            <div class="info-item">
+                <span class="info-label">核心算法</span>
+                <span class="info-value">FSRS-6.0 (BSD-3)</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">数据格式</span>
+                <span class="info-value">Anki 兼容 (.apkg)</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">无障碍支持</span>
+                <span class="info-value">深色模式 / 大字号</span>
+            </div>
+        </div>
+
+        <p class="description">
+            <span class="highlight">瞄一眼</span> 是一款纯净、高效的鸿蒙原生复习工具。<br>
+            我们坚持<span class="highlight">数据主权</span>，所有复习数据均可自由导出。<br>
+            内置自研 <span class="highlight">FSRS-6</span> 调度引擎，<br>
+            旨在为您提供极致流畅的学习体验。
+        </p>
+
+        <div class="copyright">
+            © 2026 Blues & Vivid Lab. All rights reserved.
+        </div>
+
+        <div style="position: absolute; bottom: 0; height: 120px; width: 100%; display: flex; justify-content: center; align-items: center;">
+            <div style="width: 400px; height: 15px; background: rgba(0, 0, 0, 0.1); border-radius: 10px;"></div>
+        </div>
+    </div>
+</body>
+</html>

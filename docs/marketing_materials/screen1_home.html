@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>瞄一眼 - 截图 1 (首页)</title>
+    <style>
+        :root {
+            --harmony-brand: #007DFF;
+            --harmony-bg: #F1F3F5;
+            --harmony-card-bg: #FFFFFF;
+            --harmony-font-primary: rgba(0, 0, 0, 0.9);
+            --harmony-font-secondary: rgba(0, 0, 0, 0.6);
+            --harmony-radius-lg: 24px;
+            --harmony-page-padding: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "HarmonyHeiTi", "HarmonyOS Sans SC", sans-serif;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #E0E0E0;
+        }
+
+        /* 1080x2340 Mobile Screen */
+        .screen {
+            position: relative;
+            width: 1080px;
+            height: 2340px;
+            background: var(--harmony-bg);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transform: scale(0.3);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.2);
+            border: 12px solid #333;
+            border-radius: 60px;
+        }
+
+        /* Status Bar Mock */
+        .status-bar {
+            height: 120px;
+            padding: 0 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 42px;
+            font-weight: 500;
+        }
+
+        /* Header */
+        .header {
+            padding: 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .header-title {
+            font-size: 96px;
+            font-weight: 700;
+            color: var(--harmony-font-primary);
+        }
+
+        .header-subtitle {
+            font-size: 42px;
+            color: var(--harmony-font-secondary);
+            margin-top: 16px;
+        }
+
+        /* Summary Card */
+        .summary-card {
+            margin: 40px 60px;
+            padding: 80px;
+            background: var(--harmony-card-bg);
+            border-radius: var(--harmony-radius-lg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .progress-ring {
+            width: 480px;
+            height: 480px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 60px;
+        }
+
+        .progress-ring svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring circle {
+            fill: none;
+            stroke-width: 40;
+            stroke-linecap: round;
+        }
+
+        .progress-ring .bg { stroke: #F1F3F5; }
+        .progress-ring .bar {
+            stroke: var(--harmony-brand);
+            stroke-dasharray: 1382; /* 2 * PI * 220 */
+            stroke-dashoffset: 414; /* 70% complete */
+        }
+
+        .progress-text {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .progress-value {
+            font-size: 120px;
+            font-weight: 700;
+            color: var(--harmony-brand);
+        }
+
+        .progress-label {
+            font-size: 42px;
+            color: var(--harmony-font-secondary);
+        }
+
+        .summary-stats {
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            margin-top: 40px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-value {
+            font-size: 72px;
+            font-weight: 700;
+            color: var(--harmony-font-primary);
+        }
+
+        .stat-label {
+            font-size: 36px;
+            color: var(--harmony-font-secondary);
+            margin-top: 12px;
+        }
+
+        /* Collections List */
+        .section-header {
+            padding: 40px 60px 20px;
+            font-size: 48px;
+            font-weight: 600;
+            color: var(--harmony-font-primary);
+        }
+
+        .collection-item {
+            margin: 20px 60px;
+            padding: 60px;
+            background: var(--harmony-card-bg);
+            border-radius: var(--harmony-radius-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .collection-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .collection-name {
+            font-size: 54px;
+            font-weight: 600;
+            color: var(--harmony-font-primary);
+        }
+
+        .collection-meta {
+            font-size: 36px;
+            color: var(--harmony-font-secondary);
+            margin-top: 8px;
+        }
+
+        .collection-badge {
+            background: #E7F3FF;
+            color: var(--harmony-brand);
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 36px;
+            font-weight: 600;
+        }
+
+        /* Bottom Action */
+        .bottom-action {
+            position: absolute;
+            bottom: 120px;
+            left: 0;
+            right: 0;
+            padding: 0 60px;
+        }
+
+        .btn-primary {
+            width: 100%;
+            height: 180px;
+            background: var(--harmony-brand);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 90px;
+            font-size: 64px;
+            font-weight: 600;
+            box-shadow: 0 20px 40px rgba(0, 125, 255, 0.3);
+        }
+
+        .nav-bar {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .nav-indicator {
+            width: 400px;
+            height: 15px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="screen">
+        <div class="status-bar">
+            <span>9:41</span>
+            <div style="display: flex; gap: 20px;">
+                <span>📶</span>
+                <span>🔋</span>
+            </div>
+        </div>
+
+        <div class="header">
+            <div>
+                <h1 class="header-title">早安，Blues</h1>
+                <p class="header-subtitle">今天也要瞄一眼吗？</p>
+            </div>
+            <div style="width: 120px; height: 120px; border-radius: 60px; background: #DDD;"></div>
+        </div>
+
+        <div class="summary-card">
+            <div class="progress-ring">
+                <svg viewBox="0 0 500 500">
+                    <circle class="bg" cx="250" cy="250" r="220" />
+                    <circle class="bar" cx="250" cy="250" r="220" />
+                </svg>
+                <div class="progress-text">
+                    <span class="progress-value">70%</span>
+                    <span class="progress-label">今日进度</span>
+                </div>
+            </div>
+            <div class="summary-stats">
+                <div class="stat-item">
+                    <span class="stat-value">42</span>
+                    <span class="stat-label">待复习</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">15</span>
+                    <span class="stat-label">新要点</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">128</span>
+                    <span class="stat-label">连续天数</span>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-header">正在学习的合集</h2>
+        
+        <div class="collection-item">
+            <div class="collection-info">
+                <span class="collection-name">鸿蒙开发进阶</span>
+                <span class="collection-meta">240 个要点 · 昨天学过</span>
+            </div>
+            <span class="collection-badge">12</span>
+        </div>
+
+        <div class="collection-item">
+            <div class="collection-info">
+                <span class="collection-name">FSRS-6 算法原理</span>
+                <span class="collection-meta">56 个要点 · 3 天前学过</span>
+            </div>
+            <span class="collection-badge">8</span>
+        </div>
+
+        <div class="bottom-action">
+            <button class="btn-primary">开始复习</button>
+        </div>
+
+        <div class="nav-bar">
+            <div class="nav-indicator"></div>
+        </div>
+    </div>
+</body>
+</html>
